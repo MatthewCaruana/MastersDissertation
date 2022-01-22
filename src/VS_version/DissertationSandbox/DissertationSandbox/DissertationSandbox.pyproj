@@ -1,0 +1,176 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>54d9e000-88db-4a4d-8bae-01fddd7105c8</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>NeuralNetworkCreator.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>DissertationSandbox</Name>
+    <RootNamespace>DissertationSandbox</RootNamespace>
+    <InterpreterId>Global|PythonCore|3.9</InterpreterId>
+    <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DocumentGenerator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="EntityDetection\crf\convert.py" />
+    <Compile Include="EntityDetection\crf\eval.py" />
+    <Compile Include="EntityDetection\crf\output2query.py" />
+    <Compile Include="EntityDetection\EntityDetection.py" />
+    <Compile Include="EntityDetection\EntityDetectionMine.py" />
+    <Compile Include="EntityDetection\top_retrieval.py" />
+    <Compile Include="EntityDetection\__init__.py" />
+    <Compile Include="EntityLinking\__init__.py" />
+    <Compile Include="ExampleDataKGLoading.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="KGConstructors.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="KGLoader.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NeuralNetworkCreator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PDFConverter.py" />
+    <Compile Include="RelationPrediction\__init__.py" />
+    <Compile Include="TextPreprocessing\DocumentGenerator.py" />
+    <Compile Include="TextPreprocessing\ExampleDataKGLoading.py" />
+    <Compile Include="TextPreprocessing\KGConstructors.py" />
+    <Compile Include="TextPreprocessing\KGLoader.py" />
+    <Compile Include="TextPreprocessing\PDFConverter.py" />
+    <Compile Include="TextPreprocessing\WikidataFileOrganizer.py" />
+    <Compile Include="TextPreprocessing\__init__.py" />
+    <Compile Include="Utilities\CypherStringBuilder.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\Neo4jConnector.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\NeuralNetworkPT.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\NeuralNetworkTF.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\Property.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\Py2NeoConnector.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\QueryFormatter.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\QuestionAnsweringModule.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\Transformations.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utilities\Triples.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="WikidataFileOrganizer.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="CondaEnv|CondaEnv|py39" />
+    <InterpreterReference Include="Global|PythonCore|3.9" />
+    <InterpreterReference Include="Global|VisualStudio|py39" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EntityDetection\" />
+    <Folder Include="EntityDetection\crf\" />
+    <Folder Include="EntityDetection\crf\data\" />
+    <Folder Include="EntityDetection\crf\query_text\" />
+    <Folder Include="EntityDetection\crf\stanford-ner\" />
+    <Folder Include="EntityDetection\crf\stanford-ner\classifiers\" />
+    <Folder Include="EntityDetection\crf\stanford-ner\data\" />
+    <Folder Include="EntityDetection\crf\stanford-ner\lib\" />
+    <Folder Include="EntityLinking\" />
+    <Folder Include="models\" />
+    <Folder Include="RelationPrediction\" />
+    <Folder Include="saved_checkpoints\" />
+    <Folder Include="saved_checkpoints\lstmMohammed\" />
+    <Folder Include="TextPreprocessing\" />
+    <Folder Include="Utilities\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="EntityDetection\crf\auto_run.sh" />
+    <Content Include="EntityDetection\crf\qa.prop" />
+    <Content Include="EntityDetection\crf\query_text\query.test" />
+    <Content Include="EntityDetection\crf\query_text\query.valid" />
+    <Content Include="EntityDetection\crf\README.md" />
+    <Content Include="EntityDetection\crf\stanford-ner.zip" />
+    <Content Include="EntityDetection\crf\stanford-ner\build.xml" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.all.3class.distsim.crf.ser.gz" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.all.3class.distsim.prop" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.conll.4class.distsim.crf.ser.gz" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.conll.4class.distsim.prop" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.muc.7class.distsim.crf.ser.gz" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\english.muc.7class.distsim.prop" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\example.serialized.ncc.ncc.ser.gz" />
+    <Content Include="EntityDetection\crf\stanford-ner\classifiers\example.serialized.ncc.prop" />
+    <Content Include="EntityDetection\crf\stanford-ner\data\stanford.predicted.test" />
+    <Content Include="EntityDetection\crf\stanford-ner\data\stanford.predicted.valid" />
+    <Content Include="EntityDetection\crf\stanford-ner\data\stanford.test" />
+    <Content Include="EntityDetection\crf\stanford-ner\data\stanford.train" />
+    <Content Include="EntityDetection\crf\stanford-ner\data\stanford.valid" />
+    <Content Include="EntityDetection\crf\stanford-ner\lib\joda-time.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\lib\jollyday-0.4.9.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\lib\stanford-ner-resources.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\LICENSE.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\ner-gui.bat" />
+    <Content Include="EntityDetection\crf\stanford-ner\ner-gui.command" />
+    <Content Include="EntityDetection\crf\stanford-ner\ner-gui.sh" />
+    <Content Include="EntityDetection\crf\stanford-ner\ner.bat" />
+    <Content Include="EntityDetection\crf\stanford-ner\ner.sh" />
+    <Content Include="EntityDetection\crf\stanford-ner\NERDemo.java" />
+    <Content Include="EntityDetection\crf\stanford-ner\qa_ner.ser.gz" />
+    <Content Include="EntityDetection\crf\stanford-ner\README.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\sample-conll-file.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\sample-w-time.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\sample.ner.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\sample.txt" />
+    <Content Include="EntityDetection\crf\stanford-ner\stanford-ner-3.8.0-javadoc.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\stanford-ner-3.8.0-sources.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\stanford-ner-3.8.0.jar" />
+    <Content Include="EntityDetection\crf\stanford-ner\stanford-ner.jar" />
+    <Content Include="EntityDetection\README.md" />
+    <Content Include="EntityLinking\README.md" />
+    <Content Include="models\checkpoint" />
+    <Content Include="models\model.json" />
+    <Content Include="models\modelsummary.txt" />
+    <Content Include="models\model_weights.hs.data-00000-of-00001" />
+    <Content Include="models\model_weights.hs.index" />
+    <Content Include="RelationPrediction\README.md" />
+    <Content Include="saved_checkpoints\lstmMohammed\id1_best_model.pt" />
+    <Content Include="saved_checkpoints\lstmMohammed\trace.txt" />
+    <Content Include="TextPreprocessing\README.md" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

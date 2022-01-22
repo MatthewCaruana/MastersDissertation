@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "args": [
+                // Entity Detection Model Creation
+                //"--entity_detection_mode", "LSTM", "--fix_embed", "--no_cuda"
+
+                // Entity Detection Top Retrieval
+                //"--trained_model", "E:/Development/MastersDissertation/src/VS_version/DissertationSandbox/DissertationSandbox/saved_checkpoints/lstmMohammed/id1_best_model.pt","--entity_detection_mode", "LSTM" 
+            ],
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
