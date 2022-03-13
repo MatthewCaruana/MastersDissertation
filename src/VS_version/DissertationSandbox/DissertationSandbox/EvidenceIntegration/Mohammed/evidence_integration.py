@@ -123,19 +123,16 @@ def evidence_integration(data_path, ent_path, rel_path, output_dir, index_reach,
             fout.write(" %%%% {}\t{}\t{}\t{}\t{}".format(mid, rel, mid_name, mid_score, rel_score, comb_score))
         fout.write('\n')
 
-        if len(id2answers[line_id]) >= 1 and id2answers[line_id][0][0] == truth_mid \
-                and id2answers[line_id][0][1] == truth_rel:
+        if len(id2answers[line_id]) >= 1 and id2answers[line_id][0][0] == truth_mid and id2answers[line_id][0][1] == truth_rel:
             retrieved_top1 += 1
             retrieved_top2 += 1
             retrieved_top3 += 1
             lineids_found1.append(line_id)
-        elif len(id2answers[line_id]) >= 2 and id2answers[line_id][1][0] == truth_mid \
-                and id2answers[line_id][1][1] == truth_rel:
+        elif len(id2answers[line_id]) >= 2 and id2answers[line_id][1][0] == truth_mid and id2answers[line_id][1][1] == truth_rel:
             retrieved_top2 += 1
             retrieved_top3 += 1
             lineids_found2.append(line_id)
-        elif len(id2answers[line_id]) >= 3 and id2answers[line_id][2][0] == truth_mid \
-                and id2answers[line_id][2][1] == truth_rel:
+        elif len(id2answers[line_id]) >= 3 and id2answers[line_id][2][0] == truth_mid and id2answers[line_id][2][1] == truth_rel:
             retrieved_top3 += 1
             lineids_found3.append(line_id)
 

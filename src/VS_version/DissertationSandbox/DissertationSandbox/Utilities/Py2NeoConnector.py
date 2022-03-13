@@ -18,8 +18,6 @@ class Py2NeoConnector:
             self.graph.merge(node_subject, triple.subject,"name")
             for property in properties:
                 node_subject[property.Name] = property.Text
-            node_subject["RelationType"] = "Subject"
-            self.graph.push(node_subject)
         except:
             print("Something went wrong in subject")
 
@@ -29,8 +27,6 @@ class Py2NeoConnector:
             self.graph.merge(node_object,triple.object,"name")
             for property in properties:
                 node_object[property.Name] = property.Text
-            node_subject["RelationType"] = "Object"
-            self.graph.push(node_object)
         except:
             print("Something went wrong in object")
 
@@ -38,8 +34,6 @@ class Py2NeoConnector:
         relationship = Relationship(node_subject, triple.relation, node_object)
         try:
             self.graph.merge(relationship,triple.relation,"name")
-            node_subject["RelationType"] = "Relation"
-            self.graph.push(relationship)
         except:
             print("Something went wrong in rel")
 

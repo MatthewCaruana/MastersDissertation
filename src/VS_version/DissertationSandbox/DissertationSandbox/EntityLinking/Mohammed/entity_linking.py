@@ -71,10 +71,10 @@ def entity_linking(data_type, predictedfile, goldfile, HITS_TOP_ENTITIES, output
         # C_counts = []
         C_scored = []
         line_id = line[0]
-        tokens = get_ngram(line[1])
+        tokens = get_ngram(line[1]) # list of all entity n-grams at the maximum of 3 words
 
         if len(tokens) > 0:
-            maxlen = len(tokens[0].split())
+            maxlen = len(tokens[0].split()) # get the longest sequence there is of entities
         for item in tokens:
             if len(item.split()) < maxlen and len(C) == 0:
                 maxlen = len(item.split())
@@ -82,7 +82,7 @@ def entity_linking(data_type, predictedfile, goldfile, HITS_TOP_ENTITIES, output
                 break
             if item in stopword:
                 continue
-            C.extend(inverted_index[item])
+            C.extend(inverted_index[item]) # add the list found in the inverted index dictionary to the C list
             # if len(C) > 0:
             #     break
 

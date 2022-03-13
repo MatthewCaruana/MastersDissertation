@@ -110,3 +110,16 @@ class Neo4jConnector():
     def list_graph(self, name, db="neo4j"):
         string = "CALL gds.graph.list('" + name + "')"
         return self.query(string, db)
+
+    def entities_with_name(self, node, db="neo4j"):
+        string = "MATCH (n:Entity) WHERE n.Text CONTAINS \"" + node + "\" RETURN n"
+
+        results = self.query(string, db)
+
+        return results
+
+    def all_relations_for_node(self, node, db="neo4j"):
+        string = "MATCH ()"
+
+    def outgoing_relatiosn_for_node(self, node, db="neo4j"):
+        string = "MATCH (n:Entity {Text: '"+ node + "'})-[r]-(m) RETURN n,r,m"

@@ -16,11 +16,16 @@ from Property import *
 from Py2NeoConnector import *
 
 def populateMaltaBudgetsData(connector, databaseName="maltabudgets"):
-    for file in glob.glob("data/MaltaBudgets/English/triples/*.json"):
-        json_file = open(file, 'r')
+    location = "data/MaltaBudgets/English/triples/"
+    files = [f for f in os.listdir(location)]
+
+    for file in files:
+        json_file = open(location + file, 'r')
         json_content = json.loads(json_file.read())
 
-        properties = []
+        year = file[1:5]
+
+        properties = [Property("Year", year)]
 
         for triple in json_content:
             if triple:

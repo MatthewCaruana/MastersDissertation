@@ -1,10 +1,17 @@
 import pickle
+import json
+import pandas as pd
+import nltk
+import sys
 
-file = open("../../../../Data/data/SimpleQuestions_v2/freebase-subsets/freebase-FB2M-graph.pk", "rb")
-# file = open("../../../../Data/data/SimpleQuestions_v2/freebase-subsets/freebase-FB5M.txt")
+from nltk.tokenize import word_tokenize
 
-print(pickle.load(file))
+file = open("data//QuestionAnswering//sq_glove300d.pt", "r", encoding="utf-8")
+pickle.load(file)
+#count = 0
 
-#for x in file:
+for x in file:
     #print(pickle.load(x)
-    #print(x)
+    print(x)
+
+#    count = count + 1
