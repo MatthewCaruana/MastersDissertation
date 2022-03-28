@@ -20,35 +20,72 @@ def evaluate(actual, predicted, mode):
     correct = 0
 
     count = 0
-    predicted_normalized = predicted.argmax(axis=1)
-    predicted = [[0]*300]*total
-    for predicted_location in predicted_normalized:
-        predicted[count][predicted_location] = 1
-        count += 1
+    predicted_normalized = predicted.argmax(axis=0)
+    new_predicted = []
+    for row in predicted:
+        new_row = []
+        for token in row:
+            new_token = []
+            if token[0] > token[1] or (token[0] < 0 and token[1] < 0):
+                new_token = [1,0]
+            else:
+                new_token = [0,1]
+            new_row.append(new_token)
+        new_predicted.append(new_row)
+
+    #predicted = [[0]*300]*total
+    #for predicted_location in predicted_normalized:
+    #    predicted[count][predicted_location[0]] = 1
+    #    count += 1
 
     count = 0
-    for predicted_row in predicted:
+    true_pos = 0
+    true_neg = 0
+    false_pos = 0
+    false_neg = 0
+    for predicted_row in new_predicted:
         actual_row = actual[count] # Search by Name
+
+        for i in range(0, 299):
+            if actual_row[i][0] == 0 and actual_row[i][1] == 1:
+                if actual_row[i] == predicted_row[i]:
+                    true_pos += 1
+                else:
+                    false_pos += 1
+            else:
+                if actual_row[i] == predicted_row[i]:
+                    true_neg += 1
+                else:
+                    false_neg += 1
 
         if actual_row == predicted_row:
             correct += 1
 
         count += 1
 
-    if predicted_len == 0:
-        precision = 0
-    else:
-        precision = correct / predicted_len
+    #if predicted_len == 0:
+    #    precision = 0
+    #else:
+    #    precision = correct / predicted_len
+    accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
+    precision = true_pos / (true_pos + false_pos)
+    recall = true_pos / (true_pos + false_neg)
 
-    if total == 0:
-        recall = 0
-    else:
-        recall = correct / total
+    
+    #if total == 0:
+    #    recall = 0
+    #else:
+    #    recall = correct / total
 
     if precision + recall == 0:
         f1 = 0
     else:
         f1 = 2 * precision * recall / (precision + recall)
+
+    print("Accuracy: " + str(accuracy * 100))
+    print("Precision: " + str(precision * 100))
+    print("Recall: " + str(recall * 100))
+    print("F-Measure: " + str(f1 * 100))
 
     return precision, recall, f1
 
@@ -129,10 +166,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
     parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=False)
+    parser.add_argument('--do_training', type=bool, default=True)
     parser.add_argument('--dataset', type=str, default="SimpleQuestions")
     parser.add_argument('--model_location', type=str, default="EntityDetection\\Models\\")
-    parser.add_argument('--model_name', type=str, default="simple_model_testing")
+    parser.add_argument('--model_name', type=str, default="simple_model_first_200")
     parser.add_argument('--results_location', type=str, default="EntityDetection\\Results\\")
     parser.add_argument('--mode', type=str, default="LSTM")
 

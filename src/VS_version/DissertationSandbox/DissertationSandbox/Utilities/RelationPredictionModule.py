@@ -49,23 +49,36 @@ class LRRelationPrediction:
 class RNNRelationPrediction:
     def __init__(self):
         print("Instantiated RNN Relation Predictor")
+        self.input_size = 100
+        self.hidden_size = 256
+        self.layer_numbers = 2
+        self.rnn_dropout = 0.3
+        self.label_size = 2
+
+        np.random.seed(456)
+        self.batch_size = 500
         self.iterations = 100
+
+        self.dense_embedding = 16 # Dimension of the dense embedding
+        self.lstm_units = 16
+        self.dense_units = 100
+        self.word_count = word_count
 
     def create_model(self):
         print("Creating Relation Prediciton RNN Model")
         self.model = keras.Sequential()
-        #self.model.add(keras.Input(shape=(300,1)))
+        self.model.add(keras.Input(shape=(300,)))
         if mode == "LSTM":
-            self.model.add(layers.Bidirectional(layers.LSTM(128), input_shape=(100,1)))
-            #self.model.add(layers.Bidirectional(layers.LSTM(64)))
-            #self.model.add(layers.Reshape((300,1)))
+            self.model.add(layers.Embedding(self.word_count, self.dense_embedding, embeddings_initializer="uniform", input_length=300))
+            self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
 
-            #self.model.add(layers.BatchNormalization())
-            #self.model.add(layers.Dropout(self.rnn_dropout))
-            ##self.model.add(layers.Bidirectional(layers.LSTM(64, return_sequences=True), input_shape=(300,100)))
-            self.model.add(layers.Dense(self.input_size))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.Dropout(self.rnn_dropout))
+            self.model.add(layers.Dense(self.label_size))
 
-        self.model.compile(loss="categorical_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.001), metrics=["accuracy"])
+        self.model.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
         self.model.summary()
 
     def load_model(self, location):
@@ -88,6 +101,22 @@ class RNNRelationPrediction:
             self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=1024, epochs=self.iterations, verbose=1)
 
         self.save_model(model_location, "simple_model2")
+
+    def detect(self, input, mode, database):
+        print("Starting Predictions for " + mode + " for " + database + " database.")
+
+        tensor_input = tf.convert_to_tensor(input)
+
+        results = self.model.predict(tensor_input, batch_size=128, verbose=1)
+
+        return results
+
+    def predict_single(self, input):
+        tensor_input = tf.convert_to_tensor(input)
+
+        results = self.model.predict(tensor_input, batch_size=64, verbose=1)
+        
+        return results
 
 
 class BERTRelationPrediction:

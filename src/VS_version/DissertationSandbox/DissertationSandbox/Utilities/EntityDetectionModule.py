@@ -155,10 +155,10 @@ class NeuralEntityDetection:
 
         np.random.seed(456)
         self.batch_size = 500
-        self.iterations = 5
+        self.iterations = 200
 
         self.dense_embedding = 16 # Dimension of the dense embedding
-        self.lstm_units = 64
+        self.lstm_units = 16
         self.dense_units = 100
         self.word_count = word_count
 
@@ -169,14 +169,16 @@ class NeuralEntityDetection:
         if mode == "LSTM":
             self.model.add(layers.Embedding(self.word_count, self.dense_embedding, embeddings_initializer="uniform", input_length=300))
             self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
-            self.model.add(layers.Bidirectional(layers.LSTM(150)))
 
-            #self.model.add(layers.TimeDistributed(layers.Dense(1, activation="sigmoid")))
-            #self.model.add(layers.Dense(1, activation="sigmoid"))
-            self.model.add(layers.Activation("softmax"))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.Dropout(self.rnn_dropout))
+            self.model.add(layers.Dense(self.label_size))
 
-        self.model.compile(loss="categorical_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
+        self.model.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
         self.model.summary()
+
 
     def load_model(self, location):
         self.model = keras.models.load_model(location +".h5")
@@ -191,9 +193,6 @@ class NeuralEntityDetection:
         print("Starting Training for " + database + " database.")
         self.create_model(mode)
 
-        #train_x = [np.eye(300)[flag] for flag in train_x]
-        #test_x = [np.eye(300)[flag] for flag in test_x]
-
         tensor_train_x = tf.convert_to_tensor(train_x)
         tensor_train_y = tf.convert_to_tensor(train_y)
 
@@ -201,7 +200,7 @@ class NeuralEntityDetection:
         tensor_test_y = tf.convert_to_tensor(test_y)
 
         with tf.device("/gpu:0"):
-            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=128, epochs=self.iterations, verbose=1)
+            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=1024, epochs=self.iterations, verbose=1)
 
         self.save_model(model_location)
 
@@ -210,6 +209,13 @@ class NeuralEntityDetection:
 
         tensor_input = tf.convert_to_tensor(input)
 
-        results = self.model.predict(tensor_input, batch_size=64, verbose=1)
+        results = self.model.predict(tensor_input, batch_size=128, verbose=1)
 
+        return results
+
+    def predict_single(self, input):
+        tensor_input = tf.convert_to_tensor(input)
+
+        results = self.model.predict(tensor_input, batch_size=64, verbose=1)
+        
         return results
