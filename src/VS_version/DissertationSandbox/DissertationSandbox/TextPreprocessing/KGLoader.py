@@ -78,7 +78,7 @@ def populateFreebaseData(connector, databaseName="freebase"):
 
 
 def main():
-    malta_graph = Py2NeoConnector("bolt://localhost:7687", username="admin", password="password", database="maltabudgets")
+    malta_graph = Py2NeoConnector("bolt://localhost:14220", username="matthew", password="password", database="maltabudgets-en")
     #freebase_graph = Py2NeoConnector("bolt://localhost:7687", username="admin", password="password", database="fb5m")
     
     populateMaltaBudgetsData(malta_graph)

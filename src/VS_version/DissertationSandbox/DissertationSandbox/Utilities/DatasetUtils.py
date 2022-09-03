@@ -67,6 +67,24 @@ class DatasetUtils:
         return unique_tokens
 
     @staticmethod
+    def dictionarise_relations(train, valid= None, test=None):
+        relations = train
+        if len(valid) > 0:
+            relations = relations + valid
+        if len(test) > 0:
+            relations = relations + test
+
+        unique_relations = {}
+
+        index = 1
+        for relation in relations:
+            if relation not in unique_relations:
+                unique_relations[relation] = index
+                index += 1
+
+        return unique_relations
+
+    @staticmethod
     def encode_sentences(dictionary, sentences, max_size=300):
         encoded_sentences = []
         for sentence in sentences:
@@ -81,6 +99,18 @@ class DatasetUtils:
             encoded_sentences.append(encoded_sentence)
 
         return encoded_sentences
+
+    @staticmethod
+    def decode_sentences(dictionary, sentences):
+        decoded_sentences = []
+        for sentence in sentences:
+            decoded_sentence= []
+            for token in sentence:
+                if token > 0:
+                    decoded_sentence.append(dictionary[token])
+            decoded_sentences.append(decoded_sentence)
+
+        return decoded_sentences
 
     @staticmethod
     def encode_entities(entities, max_size=300):
@@ -101,3 +131,30 @@ class DatasetUtils:
             encoded_entities.append(encoded_entity)
 
         return encoded_entities
+
+    @staticmethod
+    def encode_relations(relations, relation_dictionary):
+        encoded_relations = []
+        index = 0
+
+        for relation in relations:
+            encoded_relation = [0] * len(relation_dictionary)
+
+            dictionary_loc = relation_dictionary[relation] - 1
+
+            encoded_relation[dictionary_loc] = 1
+
+            encoded_relations.append(encoded_relation)
+            index += 1
+
+        return encoded_relations
+
+    @staticmethod
+    def decode_relations(dictionary, relations):
+        decoded_relations = []
+        for relation in relations:
+            relation_index = relation.index(max(relation))
+
+            decoded_relations.append(dictionary[relation_index+1])
+
+        return decoded_relations

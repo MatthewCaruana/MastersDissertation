@@ -20,7 +20,6 @@ def evaluate(actual, predicted, mode):
     correct = 0
 
     count = 0
-    predicted_normalized = predicted.argmax(axis=0)
     new_predicted = []
     for row in predicted:
         new_row = []
@@ -32,11 +31,6 @@ def evaluate(actual, predicted, mode):
                 new_token = [0,1]
             new_row.append(new_token)
         new_predicted.append(new_row)
-
-    #predicted = [[0]*300]*total
-    #for predicted_location in predicted_normalized:
-    #    predicted[count][predicted_location[0]] = 1
-    #    count += 1
 
     count = 0
     true_pos = 0
@@ -63,19 +57,9 @@ def evaluate(actual, predicted, mode):
 
         count += 1
 
-    #if predicted_len == 0:
-    #    precision = 0
-    #else:
-    #    precision = correct / predicted_len
     accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
     precision = true_pos / (true_pos + false_pos)
     recall = true_pos / (true_pos + false_neg)
-
-    
-    #if total == 0:
-    #    recall = 0
-    #else:
-    #    recall = correct / total
 
     if precision + recall == 0:
         f1 = 0
@@ -91,15 +75,12 @@ def evaluate(actual, predicted, mode):
 
 def load_simple_questions(location):
     train = pd.read_csv(location + "train.txt", sep="\t", header= None)
-    train.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
     train = DatasetUtils.FormatSimpleQuestionsForEntityDetection(train)
 
     valid = pd.read_csv(location + "valid.txt", sep="\t", header=None)
-    valid.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
     valid = DatasetUtils.FormatSimpleQuestionsForEntityDetection(valid)
 
     test = pd.read_csv(location + "test.txt", sep="\t", header=None)
-    test.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
     test = DatasetUtils.FormatSimpleQuestionsForEntityDetection(test)
 
     return train, valid, test
@@ -118,6 +99,47 @@ def save_evaluations(precision, recall, f1, mode, location):
     file.write("Recall:\t" + str(recall))
     file.write("F1-score:\t" + str(f1))
     file.close()
+
+def save_responses(original_sentences, responses, mode, location):
+    print("Starting response gathering for " + mode)
+
+    predicted_len = len(responses)
+
+    count = 0
+    new_predicted = []
+    for row in responses:
+        new_row = []
+        for token in row:
+            new_token = []
+            if token[0] > token[1] or (token[0] < 0 and token[1] < 0):
+                new_token = [1,0]
+            else:
+                new_token = [0,1]
+            new_row.append(new_token)
+        new_predicted.append(new_row)
+
+    file = open(location + mode + ".txt", "w+", encoding="utf-8")
+    file.write(mode + ":\n")
+    count = 1
+    for row in new_predicted:
+        file.write(mode + "-" + str(count) + "\t")
+        row_entities = []
+        token_count = 0
+        for token in row:
+            if token == [0, 1]:
+                if token_count < len(original_sentences[count-1]):
+                    row_entities.append(original_sentences[count-1][token_count])
+            token_count += 1
+
+        if len(row_entities) > 1:
+            file.write(" ".join(row_entities))
+        elif len(row_entities) == 1:
+            file.write(row_entities[0])
+        file.write("\n")
+        count += 1
+    
+    file.close()
+    print("Response gathering for " + mode + " completed")
 
 def main(args):
     print(args)
@@ -162,11 +184,19 @@ def main(args):
     save_evaluations(valid_precision, valid_recall, valid_f1, "Valid", args.results_location + args.dataset + "\\")
     save_evaluations(test_precision, test_recall, test_f1, "Test", args.results_location + args.dataset + "\\")
 
+    train_x = DatasetUtils.decode_sentences(inverse_dictionary, train_x)
+    valid_x = DatasetUtils.decode_sentences(inverse_dictionary, valid_x)
+    test_x = DatasetUtils.decode_sentences(inverse_dictionary, test_x)
+
+    save_responses(train_x, training_responses, "train", args.results_location + args.dataset + "\\Responses\\")
+    save_responses(test_x, testing_responses, "test", args.results_location + args.dataset + "\\Responses\\")
+    save_responses(valid_x, validation_responses, "valid", args.results_location + args.dataset + "\\Responses\\")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
     parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=True)
+    parser.add_argument('--do_training', type=bool, default=False)
     parser.add_argument('--dataset', type=str, default="SimpleQuestions")
     parser.add_argument('--model_location', type=str, default="EntityDetection\\Models\\")
     parser.add_argument('--model_name', type=str, default="simple_model_first_200")

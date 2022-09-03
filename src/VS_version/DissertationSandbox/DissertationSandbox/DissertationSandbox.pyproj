@@ -24,6 +24,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DatasetGeneration\BudgetsDatasetGen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DatasetGeneration\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="data\WashingtonPost\scripts\index-wapo-spacy.py" />
     <Compile Include="data\WashingtonPost\scripts\tag-wapo.py" />
     <Compile Include="data\WashingtonPost\scripts\wapo-print-docids.py" />
@@ -74,11 +80,29 @@
     <Compile Include="TextPreprocessing\BudgetsRestructureCSV.py" />
     <Compile Include="TextPreprocessing\DocumentGenerator.py" />
     <Compile Include="TextPreprocessing\DocumentGeneratorTREC.py" />
+    <Compile Include="TextPreprocessing\DOIDataExtractor.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextPreprocessing\DOILinkExtractor.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextPreprocessing\DOIQAExtractor.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TextPreprocessing\ExampleDataKGLoading.py" />
     <Compile Include="TextPreprocessing\FreebaseRestructure.py" />
     <Compile Include="TextPreprocessing\FreebaseRestructureCSV.py" />
     <Compile Include="TextPreprocessing\KGConstructors.py" />
     <Compile Include="TextPreprocessing\KGLoader.py" />
+    <Compile Include="TextPreprocessing\MaltaBudgetsRestructureCSV.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextPreprocessing\MalteseDataRestructuring.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextPreprocessing\MalteseTriplesExtraction.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TextPreprocessing\PDFConverter.py" />
     <Compile Include="TextPreprocessing\WikidataFileOrganizer.py" />
     <Compile Include="TextPreprocessing\__init__.py" />
@@ -120,13 +144,19 @@
     <InterpreterReference Include="Global|VisualStudio|py39" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ChromeDriver\" />
     <Folder Include="data\" />
+    <Folder Include="data\DOI\data\" />
+    <Folder Include="data\DOI\triples\" />
+    <Folder Include="data\DOI\triples\mt\" />
+    <Folder Include="data\DOI\triples\en\" />
     <Folder Include="data\MaltaBudgets\" />
     <Folder Include="data\MaltaBudgets\English\" />
     <Folder Include="data\MaltaBudgets\English\documents\" />
     <Folder Include="data\MaltaBudgets\English\triples-orig\" />
     <Folder Include="data\MaltaBudgets\English\triples\" />
     <Folder Include="data\MaltaBudgets\Maltese\" />
+    <Folder Include="data\DOI\" />
     <Folder Include="data\QuestionAnswering\" />
     <Folder Include="data\QuestionAnswering\freebase_names\" />
     <Folder Include="data\QuestionAnswering\processed_simplequestions_dataset\" />
@@ -163,6 +193,7 @@
     <Folder Include="EntityDetection\Mohammed\nn\saved_checkpoints\lstm\" />
     <Folder Include="EntityDetection\Results\" />
     <Folder Include="EntityDetection\Results\SimpleQuestions\" />
+    <Folder Include="EntityDetection\Results\SimpleQuestions\Responses\" />
     <Folder Include="EntityLinking\" />
     <Folder Include="EntityLinking\Mohammed\" />
     <Folder Include="EntityLinking\Mohammed\results\" />
@@ -176,10 +207,13 @@
     <Folder Include="EvidenceIntegration\Mohammed\results\lstm-cnn\" />
     <Folder Include="EvidenceIntegration\Mohammed\results\lstm-gru\" />
     <Folder Include="EvidenceIntegration\Mohammed\results\lstm-lstm\" />
+    <Folder Include="EvidenceIntegration\Results\" />
+    <Folder Include="EvidenceIntegration\Results\SimpleQuestions\" />
     <Folder Include="models\" />
     <Folder Include="models\EntityDetection\" />
     <Folder Include="models\EntityDetection\ner\" />
     <Folder Include="models\EntityDetection\vocab\" />
+    <Folder Include="DatasetGeneration\" />
     <Folder Include="QuestionAnswering\" />
     <Folder Include="RelationPrediction\" />
     <Folder Include="RelationPrediction\Mohammed\" />
@@ -196,6 +230,11 @@
     <Folder Include="RelationPrediction\Mohammed\nn\__pycache__\" />
     <Folder Include="RelationPrediction\Models\" />
     <Folder Include="RelationPrediction\Results\" />
+    <Folder Include="RelationPrediction\Results-FirstRun\" />
+    <Folder Include="RelationPrediction\Results-FirstRun\SimpleQuestions\" />
+    <Folder Include="RelationPrediction\Results-FirstRun\SimpleQuestions\Responses\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-third-model_300\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-third-model_300\Responses\" />
     <Folder Include="saved_checkpoints\" />
     <Folder Include="saved_checkpoints\lstmMohammed\" />
     <Folder Include="TextPreprocessing\" />
@@ -211,6 +250,7 @@
     <Folder Include="vendor\stanford-ner-2020-11-17\train\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ChromeDriver\chromedriver.exe" />
     <Content Include="data\MaltaBudgets\English\documents\all_entities.csv" />
     <Content Include="data\MaltaBudgets\English\documents\all_locations.csv" />
     <Content Include="data\MaltaBudgets\English\documents\E2005.json" />

@@ -38,12 +38,8 @@ class Neo4jConnector():
         string = "CALL gds.betweenness.stream('" + name + "') YIELD nodeId, score RETURN nodeId, gds.util.asNode(nodeId).name As name, score ORDER BY score DESC"
         return self.query(string, db)
 
-    def execute_label_propogation(self, name, db="neo4j"):
-        string = "CALL gds.labelPropogation.stream('" + name + "') YIELD nodeId, communityId As Community RETURN nodeId, gds.util.asNode(nodeId).name As Name, Community"
-        return self.query(string, db)
-
-    def execute_node_similarity(self, name, db="neo4j"):
-        string = "CALL gds.nodeSimilarity.stream('" + name + "') YIELD node1, node2, similarity RETURN nodeId, gds.util.asNode(node1).name As Entity1, gds.util.asNode(node2).name As Entity2, similarity ORDER BY similarity DESC"
+    def execute_degree_centrality(self, name, db="neo4j"):
+        string = "CALL gds.degree.stream('" + name + "') YIELD nodeId, score RETURN nodeId, gds.util.asNode(nodeId).Text, score AS degree ORDER BY score DESC"
         return self.query(string, db)
 
     def get_related_to_node(self, name, db="neo4j"):
@@ -80,9 +76,13 @@ class Neo4jConnector():
         print("Graph Created")
 
     def create_graph_for_relation_node(self, relation, node, name, db="neo4j"):
-        string = "CALL gds.graph.create('" + name + "','" \
-            + node + "', '" \
-            + relation + "')"
+        # this structure will allow me to create a spanning Tree of 2 hops to then be able to measure the graph analytics
+
+        nodeString = "MATCH (n) WHERE n.Text = \"" + node + "\" CALL apoc.path.spanningTree(n, {relationshipFilter: \""+ relation + ">,<\", maxLevel: 2}) YIELD path UNWIND nodes(path) as source RETURN id(source) as id"
+        relationString = "MATCH (n) WHERE n.Text = \"" + node + "\" CALL apoc.path.spanningTree(n, {relationshipFilter: \""+ relation + ">,<\", maxLevel: 2}) YIELD path UNWIND relationships(path) as r RETURN id(startNode(r)) AS source, id(endNode(r)) AS target, type(r) AS type"
+
+        string = "CALL gds.graph.project.cypher('" + name + "', '" + nodeString + "', '" + relationString + "')"
+       
         self.query(string, db)
         print("Graph Created")
 
@@ -123,3 +123,7 @@ class Neo4jConnector():
 
     def outgoing_relatiosn_for_node(self, node, db="neo4j"):
         string = "MATCH (n:Entity {Text: '"+ node + "'})-[r]-(m) RETURN n,r,m"
+
+    def GetForEntityRelation(self, entity, relation, db="neo4j"):
+        string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text = '" + entity + "' RETURN p"
+        return self.query(string, db)

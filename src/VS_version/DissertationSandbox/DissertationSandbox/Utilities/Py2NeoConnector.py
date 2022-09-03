@@ -7,8 +7,8 @@ from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 from py2neo.bulk import create_nodes, create_relationships
 
 class Py2NeoConnector:
-    def __init__(self, uri, username= "admin", password="password", database="neo4j"):
-        self.graph = Graph("bolt://localhost:7687", name=database, user=username, password=password)
+    def __init__(self, uri="bolt://localhost:7687", username= "admin", password="password", database="neo4j"):
+        self.graph = Graph(uri, name=database, user=username, password=password)
         self.matcher = NodeMatcher(self.graph)
 
     def AddTriple(self, triple, properties):

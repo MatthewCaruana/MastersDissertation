@@ -10,6 +10,7 @@ import nltk
 import random
 import spacy
 import tensorflow as tf
+import numpy as np
 
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -25,57 +26,37 @@ from tqdm import tqdm
 from Neo4jConnector import *
 from MAPAWrapper import *
 
-
-class GRURelationPredictor:
-    def __init__(self):
-        print("Instantiated GRU Relation Predictor")
-
-    #def detect(self, question):
-
-
-class LSTMRelationPrediction:
-    def __init__(self):
-        print("Instantiated LSTM Relation Predictor")
-
-    #def detect(self, question):
-
-
-class LRRelationPrediction:
-    def __init__(self):
-        print("Instantiated LR Relation Predictor")
-
-    #def detect(self, question):
-
 class RNNRelationPrediction:
-    def __init__(self):
+    def __init__(self, lbl_size, word_count):
         print("Instantiated RNN Relation Predictor")
-        self.input_size = 100
         self.hidden_size = 256
-        self.layer_numbers = 2
         self.rnn_dropout = 0.3
-        self.label_size = 2
+        self.label_size = lbl_size
 
         np.random.seed(456)
-        self.batch_size = 500
-        self.iterations = 100
+        self.iterations = 300
 
         self.dense_embedding = 16 # Dimension of the dense embedding
         self.lstm_units = 16
         self.dense_units = 100
         self.word_count = word_count
+        self.batch_size= 128
 
-    def create_model(self):
+    def create_model(self, mode):
         print("Creating Relation Prediciton RNN Model")
         self.model = keras.Sequential()
         self.model.add(keras.Input(shape=(300,)))
         if mode == "LSTM":
-            self.model.add(layers.Embedding(self.word_count, self.dense_embedding, embeddings_initializer="uniform", input_length=300))
+            self.model.add(layers.Embedding(self.word_count, self.dense_embedding, embeddings_initializer="uniform"))
             self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
 
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.Dropout(self.rnn_dropout))
+            self.model.add(layers.GlobalMaxPooling1D())
+            #self.model.add(layers.Dense(1))
+            #self.model.add(layers.Reshape((1,300)))
             self.model.add(layers.Dense(self.label_size))
 
         self.model.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
@@ -83,9 +64,11 @@ class RNNRelationPrediction:
 
     def load_model(self, location):
         self.model = keras.models.load_model(location)
+        self.model.summary()
 
-    def save_model(self, location, file_name):
-        self.model.save(location + file_name)
+    def save_model(self, location):
+        self.model.save(location + ".h5")
+        print("Model saved!")
 
     def train(self, train_x, train_y, test_x, test_y, mode, database, model_location):
         print("Starting Relation Prediciton Training for " + database + " database.")
@@ -100,7 +83,7 @@ class RNNRelationPrediction:
         with tf.device("/gpu:0"):
             self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=1024, epochs=self.iterations, verbose=1)
 
-        self.save_model(model_location, "simple_model2")
+        self.save_model(model_location)
 
     def detect(self, input, mode, database):
         print("Starting Predictions for " + mode + " for " + database + " database.")
@@ -118,13 +101,6 @@ class RNNRelationPrediction:
         
         return results
 
-
-class BERTRelationPrediction:
-    def __init__(self):
-        print("Instantiated BERT Relation Prediction")
-
-    def detect(self, question):
-        print()
 
 
 class BruteForceRelationPrediction:
