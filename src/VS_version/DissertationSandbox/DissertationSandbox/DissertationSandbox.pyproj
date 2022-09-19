@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>54d9e000-88db-4a4d-8bae-01fddd7105c8</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>RelationPrediction\training.py</StartupFile>
+    <StartupFile>EvidenceIntegration\EvidenceIntegrationMine.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -209,6 +209,7 @@
     <Folder Include="EvidenceIntegration\Mohammed\results\lstm-lstm\" />
     <Folder Include="EvidenceIntegration\Results\" />
     <Folder Include="EvidenceIntegration\Results\SimpleQuestions\" />
+    <Folder Include="EvidenceIntegration\Results\SimpleQuestions\Responses\" />
     <Folder Include="models\" />
     <Folder Include="models\EntityDetection\" />
     <Folder Include="models\EntityDetection\ner\" />
@@ -233,8 +234,14 @@
     <Folder Include="RelationPrediction\Results-FirstRun\" />
     <Folder Include="RelationPrediction\Results-FirstRun\SimpleQuestions\" />
     <Folder Include="RelationPrediction\Results-FirstRun\SimpleQuestions\Responses\" />
-    <Folder Include="RelationPrediction\Results\SimpleQuestions-third-model_300\" />
-    <Folder Include="RelationPrediction\Results\SimpleQuestions-third-model_300\Responses\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-eight-model-400\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-seventh-model-500\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-sixth-model-200\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-sixth-model-200\Responses\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-seventh-model-500\Responses\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions-eight-model-400\Responses\" />
+    <Folder Include="RelationPrediction\Results\SimpleQuestions\Responses\" />
     <Folder Include="saved_checkpoints\" />
     <Folder Include="saved_checkpoints\lstmMohammed\" />
     <Folder Include="TextPreprocessing\" />

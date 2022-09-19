@@ -133,6 +133,8 @@ def main(args):
     else:
         model.load_model(args.model_location + args.model_name + ".h5")
 
+    #train_response_single = model.predict_single(train_x[1])
+
     training_responses = model.detect(train_x, "training set", args.dataset)
     validation_responses = model.detect(valid_x, "valid set", args.dataset)
     testing_responses = model.detect(test_x, "test set", args.dataset)
@@ -163,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument('--do_training', type=bool, default=True)
     parser.add_argument('--dataset', type=str, default="SimpleQuestions")
     parser.add_argument('--model_location', type=str, default="RelationPrediction\\Models\\")
-    parser.add_argument('--model_name', type=str, default="fourth_model")
+    parser.add_argument('--model_name', type=str, default="nineth_model_400")
     parser.add_argument('--results_location', type=str, default="RelationPrediction\\Results\\")
     parser.add_argument('--mode', type=str, default="LSTM")
 

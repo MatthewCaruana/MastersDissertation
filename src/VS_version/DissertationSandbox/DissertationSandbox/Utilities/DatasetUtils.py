@@ -21,6 +21,13 @@ class DatasetUtils:
         return data_reformated
 
     @staticmethod
+    def FormatSimpleQuestionsForEvidenceIntegration(data):
+        selected = data[[0,4]]
+        
+        data_reformated = selected.copy()
+        return data_reformated
+
+    @staticmethod
     def FormatSimpleQuestionsForQuestionOnly(data):
         selected = data[5].values
 

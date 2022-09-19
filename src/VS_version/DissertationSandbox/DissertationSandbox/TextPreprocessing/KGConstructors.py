@@ -13,6 +13,7 @@ import nltk
 import time
 import argparse
 import csv
+import time
 
 from EntityExtractor import *
 from Triples import *
@@ -65,6 +66,8 @@ def Reconstruct(all_triples):
 def main(args):
     stanza.install_corenlp()
 
+    start_time = time.time()
+
     if args.extraction == "STANZA":
         extractor = StanzaEntityExtractor(args.language)
     elif args.extraction == "NLTK":
@@ -87,6 +90,8 @@ def main(args):
             f.close()
     else:
         files = [f for f in os.listdir(args.location)]
+
+        triples_count = 0
 
         with CoreNLPClient(annotators=["openie"], be_quiet=True) as openie_client:
             for file in files:
@@ -115,6 +120,8 @@ def main(args):
                         count = count + 1
                         if count % 1000 == 0 and count:
                             print(count + "/1000")
+
+                        triples_count = triples_count + len(file_triples)
     
                     json_file = open(args.result_dir + file.replace(".json", "-triples.json"), 'w')
                     json_file.write(json.dumps([triple.__dict__ for triple in file_triples]))
@@ -123,8 +130,15 @@ def main(args):
     
                     f.close()
 
+    stats_file = open(args.location + "statistics.txt", "w")
+    stats_file.write("Triples Generated: " + str(triples_count))
+    stats_file.write("Time Taken: " + str(time.time()-start_time) + " in seconds")
+    stats_file.close()
+
     # create mega files
     Reconstruct(all_triples)
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment the creation of the Entity Detection Neural Network")
