@@ -143,7 +143,6 @@ class BruteForceEntityDetector:
                         break
 
         return closest_entity
-        
 
 class NeuralEntityDetection:
     def __init__(self, word_count):
@@ -155,7 +154,7 @@ class NeuralEntityDetection:
 
         np.random.seed(456)
         self.batch_size = 500
-        self.iterations = 200
+        self.iterations = 50
 
         self.dense_embedding = 16 # Dimension of the dense embedding
         self.lstm_units = 16
@@ -166,7 +165,7 @@ class NeuralEntityDetection:
     def create_model(self, mode):
         self.model = keras.Sequential()
         self.model.add(keras.Input(shape=(300,)))
-        if mode == "LSTM":
+        if mode == "LSTM2":
             self.model.add(layers.Embedding(self.word_count, self.dense_embedding, embeddings_initializer="uniform", input_length=300))
             self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
 
@@ -175,6 +174,16 @@ class NeuralEntityDetection:
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.Dropout(self.rnn_dropout))
             self.model.add(layers.Dense(self.label_size))
+        elif mode == "LSTM":
+            self.model.add(layers.Embedding(self.word_count, self.dense_embedding, input_length=300))
+            self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
+
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.Dropout(self.rnn_dropout))
+            self.model.add(layers.Dense(2))
+
 
         self.model.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
         self.model.summary()
@@ -200,7 +209,7 @@ class NeuralEntityDetection:
         tensor_test_y = tf.convert_to_tensor(test_y)
 
         with tf.device("/gpu:0"):
-            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=1024, epochs=self.iterations, verbose=1)
+            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x,tensor_test_y), batch_size=10, epochs=self.iterations, verbose=1)
 
         self.save_model(model_location)
 

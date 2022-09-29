@@ -118,22 +118,23 @@ def main(args):
                                 for triple in sentence.openieTriple:
                                     file_triples.append(Triple(triple.subject, triple.relation, triple.object))
                         count = count + 1
-                        if count % 1000 == 0 and count:
-                            print(count + "/1000")
 
                         triples_count = triples_count + len(file_triples)
     
                     json_file = open(args.result_dir + file.replace(".json", "-triples.json"), 'w')
                     json_file.write(json.dumps([triple.__dict__ for triple in file_triples]))
                     json_file.close()
+
+                    stats_file = open(args.location + str(count) + "-statistics.txt", "w")
+                    stats_file.write("Triples Generated: " + str(triples_count))
+                    stats_file.write("Time Taken: " + str(time.time()-start_time) + " in seconds")
+                    stats_file.close()
+
                     all_triples.append((1, file_triples))
     
                     f.close()
 
-    stats_file = open(args.location + "statistics.txt", "w")
-    stats_file.write("Triples Generated: " + str(triples_count))
-    stats_file.write("Time Taken: " + str(time.time()-start_time) + " in seconds")
-    stats_file.close()
+    
 
     # create mega files
     Reconstruct(all_triples)

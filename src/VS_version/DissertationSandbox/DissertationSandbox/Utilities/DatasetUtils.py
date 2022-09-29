@@ -52,6 +52,51 @@ class DatasetUtils:
         return selected.tolist()
 
     @staticmethod
+    def FormatDOIForQuestionOnly(data):
+        selected = data[1].values
+
+        return selected.tolist()
+
+    @staticmethod
+    def FormatDOIForEntitiesOnly(data):
+        selected = data[2].values
+
+        return selected.tolist()
+
+    @staticmethod
+    def FormatDOIForRelationOnly(data):
+        selected = data[3].values
+
+        return selected.tolist()
+
+    @staticmethod
+    def FormatDOIForAnswerOnly(data):
+        selected = data[4].values
+
+        return selected.tolist()
+
+    @staticmethod
+    def FormatDOIForEntityDetection(data):
+        selected = data[[0,1,2]]
+
+        data_reformated = selected.copy()
+        return data_reformated
+
+    @staticmethod
+    def FormatDOIForRelationPrediction(data):
+        selected = data[[0,1,3]]
+
+        data_reformated = selected.copy()
+        return data_reformated
+
+    @staticmethod
+    def FormatDOIForEvidenceIntegration(data):
+        selected = data[[0,1,4]]
+
+        data_reformated = selected.copy()
+        return data_reformated
+
+    @staticmethod
     def dictionarise_sentences(train, valid= None, test=None):
         sentences = train
         if len(valid) > 0:
@@ -120,7 +165,7 @@ class DatasetUtils:
         return decoded_sentences
 
     @staticmethod
-    def encode_entities(entities, max_size=300):
+    def encode_entities_original(entities, max_size=300):
         encoded_entities = []
         for entity in entities:
             token_entities = entity.split(" ")
@@ -133,6 +178,25 @@ class DatasetUtils:
                 else:
                     encoded_entity[index][0] = 0
                     encoded_entity[index][1] = 1
+                index += 1
+
+            encoded_entities.append(encoded_entity)
+
+        return encoded_entities
+
+    @staticmethod
+    def encode_entities(entities, max_size=300):
+        encoded_entities = []
+        for entity in entities:
+            token_entities = entity.split(" ")
+            encoded_entity = [0 for i in range(max_size)] 
+            
+            index = 0
+            for token_entity in token_entities:
+                if token_entity == "O":
+                    encoded_entity[index] = 0
+                else:
+                    encoded_entity[index] = 1
                 index += 1
 
             encoded_entities.append(encoded_entity)

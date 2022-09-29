@@ -1,0 +1,1 @@
+TrainAccuracy:	1.0

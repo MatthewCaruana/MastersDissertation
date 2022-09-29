@@ -1,0 +1,16 @@
+test:
+test-1	Maltese
+test-2	community
+test-3	for
+test-4	
+test-5	
+test-6	did Minister Abela
+test-7	
+test-8	Secretary thank
+test-9	Apostolic Administrator remark
+test-10	
+test-11	Lakes
+test-12	
+test-13	
+test-14	Maltese Parliament
+test-15	visit

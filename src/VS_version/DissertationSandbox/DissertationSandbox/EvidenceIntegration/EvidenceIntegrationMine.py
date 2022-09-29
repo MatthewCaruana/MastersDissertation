@@ -1,7 +1,8 @@
 import argparse
 import sys
 import pandas as pd
-import tqdm
+from tqdm import tqdm
+import ast
 
 sys.path.insert(0, "Utilities")
 
@@ -56,7 +57,10 @@ def reformat_freebase(file_location, train, valid, test):
     file = open(file_location, "r", encoding="utf-8")
     conversions = {}
     for line in file:
-        conversions[line[:-1].split("\t")[0][1:-1]] = line[:-1].split("\t")[2][1:-1]
+        if line[:-1].split("\t")[0][1:-1] in conversions.keys():
+            conversions[line[:-1].split("\t")[0][1:-1]].append(line[:-1].split("\t")[2][1:-1])
+        else:
+            conversions[line[:-1].split("\t")[0][1:-1]] = [line[:-1].split("\t")[2][1:-1]]
 
     file.close()
 
@@ -95,14 +99,16 @@ def join_data(entity_detection, relation_prediction):
 def get_responses(neo4jConnector, data_list, database):
     neo4jConnector.drop_graph("tempGraph", database)
     responses = []
-    for data in data_list:
+    for data in tqdm(data_list):
         query_results = neo4jConnector.GetForEntityRelation(data[1], data[2], database)
 
-        if query_results == None:
+        if query_results == []:
             responses.append([data[0], []])
         else:
             scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
             responses.append([data[0], scored_responses])
+
+    return responses
 
 def score_responses(neo4jConnector, root, relation, responses, database):
     scored_responses = []
@@ -128,9 +134,12 @@ def prioritize_results(responses, pagerank):
     if responses == None or responses == []:
         return []
     else:
-        best_result = [response[0].end_node for response in responses if response[0].end_node.id == pagerank[0][0]]
+        if pagerank == None or pagerank == []:
+            return []
+        else:
+            best_result = [response[0].end_node for response in responses if response[0].end_node.id == pagerank[0][0]]
 
-        return [best_result[0].id, best_result[0]["Text"], pagerank[0][2]]
+            return [best_result[0].id, best_result[0]["Text"], pagerank[0][2]]
 
     #for response in responses:
     #    pagerank_single = [p for p in pagerank if p[0] == response[0].end_node["ID"]]
@@ -147,6 +156,7 @@ def evaluate(actual_results, expected_results, mode):
     print("Starting Evaluation of " + mode)
 
     correct_match = 0
+    nothing_found = 0
     total = len(actual_results)
 
 
@@ -154,23 +164,24 @@ def evaluate(actual_results, expected_results, mode):
         actual_result = actual_results[count]
         expected_result = expected_results[count]
 
-        if actual_result[1] == expected_result:
+        if actual_result[1] == []:
+            nothing_found = nothing_found + 1
+        elif any(actual_result[1][1] in x for x in expected_result):
             correct_match = correct_match + 1
 
     accuracy = correct_match/total * 100
 
-    return accuracy
+    return accuracy, nothing_found
 
 
 def save_results(results, location, mode):
     print("Saving Results for " + mode)
-    file = open(location + mode + ".txt", "w", encoding="utf-8")
-    count = 1
+    file = open(location + mode + ".txt", "w+", encoding="utf-8")
 
     file.truncate()
 
     for result in results:
-        file.write(mode + "-" + count + "\t" + result + "\n")
+        file.write(result[0] + "\t" + str(result[1]) + "\n")
 
     file.close()
     print("Finished saving results for " + mode)
@@ -180,10 +191,22 @@ def save_evaluations(result, location, mode):
     print("Saving Evaluation for " + mode)
     file = open(location + mode + ".txt", "w", encoding="utf-8")
 
-    file.write("Accuracy\t" + result)
+    file.write("Accuracy\t" + str(result))
 
     file.close()
     print("Finished saving results for " + mode)
+
+def get_responses_saved(location, mode):
+    data = []
+
+    print("Loading Responses for " + mode)
+    file = open(location + mode + ".txt", 'r', encoding="utf-8")
+
+    for line in file:
+        data.append([line.split("\t")[0], ast.literal_eval(line.split("\t")[1])])
+    
+    file.close()
+    return data
 
 
 def main(args):
@@ -195,7 +218,7 @@ def main(args):
     #load results from relation prediction
     train_rp, test_rp, valid_rp = load_responses(args.results_relation_prediction)
 
-    expected_train, expected_test, expected_valid = load_simple_questions(args.data_location, args.freebase_conversion_file)
+    expected_train, expected_valid, expected_test = load_simple_questions(args.data_location, args.freebase_conversion_file)
 
     #Create querying framework
     neo4jConnector = Neo4jConnector(args.neo4j_url, args.neo4j_username, args.neo4j_password)
@@ -204,27 +227,33 @@ def main(args):
     test_x = join_data(test_ed, test_rp)
     valid_x = join_data(valid_ed, valid_rp)
 
-    test_y = get_responses(neo4jConnector, test_x, args.neo4j_database)
-    train_y = get_responses(neo4jConnector, train_x, args.neo4j_database)
-    valid_y = get_responses(neo4jConnector, valid_x, args.neo4j_database)
+    if(args.skip == False):
+        train_y = get_responses(neo4jConnector, train_x, args.neo4j_database)
+        test_y = get_responses(neo4jConnector, test_x, args.neo4j_database)
+        valid_y = get_responses(neo4jConnector, valid_x, args.neo4j_database)
 
-    train_acc = evaluate(train_y, expected_train, "Train")
-    test_acc = evaluate(test_y, expected_test, "Test")
-    valid_acc = evaluate(valid_y, expected_valid, "Valid")
+        save_results(train_y, args.results_evidence_integration, "Train")
+        save_results(test_y, args.results_evidence_integration, "Test")
+        save_results(valid_y, args.results_evidence_integration, "Valid")
+    else:
+        train_y = get_responses_saved(args.results_evidence_integration, "Train")
+        test_y = get_responses_saved(args.results_evidence_integration, "Test")
+        valid_y = get_responses_saved(args.results_evidence_integration, "Valid")
 
-    save_results(train_y, args.results_evidence_integration, "Train")
-    save_results(test_y, args.results_evidence_integration, "Test")
-    save_results(valid_y, args.results_evidence_integration, "Valid")
+    train_acc, train_nothing_found = evaluate(train_y, expected_train, "Train")
+    test_acc,test_nothing_found = evaluate(test_y, expected_test, "Test")
+    valid_acc,valid_nothing_found = evaluate(valid_y, expected_valid, "Valid")
 
-    save_evaluations(train_acc, args.results_evidence_integration, "Train")
-    save_evaluations(test_acc, args.results_evidence_integration, "Test")
-    save_evaluations(valid_acc, args.results_evidence_integration, "Valid")
+    save_evaluations(train_acc, args.results_evidence_integration_stats, "Train")
+    save_evaluations(test_acc, args.results_evidence_integration_stats, "Test")
+    save_evaluations(valid_acc, args.results_evidence_integration_stats, "Valid")
 
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
     parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\SimpleQuestions\\Responses\\')
     parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\Responses\\')
+    parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\')
     parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\SimpleQuestions\\Responses\\')
     parser.add_argument('--freebase_conversion_file', type=str, default='data\\QuestionAnswering\\freebase_names\\FB5M.name.txt')
     parser.add_argument('--data_location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
@@ -234,6 +263,7 @@ if __name__ == "__main__":
     parser.add_argument('--neo4j_database', type=str, default="fb2m")
     parser.add_argument('--language',type=str, default="en")
     parser.add_argument('--dataset', type=str, default="SimpleQuestions")
+    parser.add_argument('--skip', type=bool, default=False)
 
 
     args = parser.parse_args()

@@ -37,8 +37,8 @@ class RNNRelationPrediction:
         np.random.seed(456)
         self.iterations = 400
 
-        self.dense_embedding = 64 # Dimension of the dense embedding
-        self.lstm_units = 64
+        self.dense_embedding = 32 #64 # Dimension of the dense embedding
+        self.lstm_units = 16 #64
         self.dense_units = 100
         self.word_count = word_count
         self.batch_size= 64
@@ -68,6 +68,14 @@ class RNNRelationPrediction:
             #self.model.add(layers.Dense(128, activation="relu"))
             self.model.add(layers.Dropout(self.rnn_dropout))
             self.model.add(layers.Dense(self.label_size, activation="softmax"))
+        if mode == "LSTM-DOI":
+            self.model.add(layers.Embedding(self.word_count, self.dense_embedding))
+            self.model.add(layers.Bidirectional(layers.LSTM(self.dense_embedding)))
+            self.model.add(layers.Activation("relu"))
+            self.model.add(layers.BatchNormalization())
+            self.model.add(layers.Dense(self.label_size * 2, activation="relu"))
+            self.model.add(layers.Dropout(self.rnn_dropout))
+            self.model.add(layers.Dense(self.label_size, activation="softmax"))
 
         self.model.compile(loss="categorical_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
         self.model.summary()
@@ -91,7 +99,7 @@ class RNNRelationPrediction:
         tensor_test_y = tf.convert_to_tensor(test_y)
 
         with tf.device("/gpu:0"):
-            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x, tensor_test_y), batch_size=1024, epochs=self.iterations, verbose=1)
+            self.model.fit(tensor_train_x, tensor_train_y, validation_data=(tensor_test_x, tensor_test_y), batch_size=10, epochs=self.iterations, verbose=1)
 
         self.save_model(model_location)
 

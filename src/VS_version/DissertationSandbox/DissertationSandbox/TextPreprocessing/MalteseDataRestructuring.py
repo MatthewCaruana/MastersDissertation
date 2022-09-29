@@ -4,13 +4,13 @@ import json
 import csv
 
 def main_pos(args):
-    doi_sentence_file = open(args.data_location, 'r', encoding="utf-8")
+    doi_sentence_file = open(args.data_location + "sentences-2022.txt", 'r', encoding="utf-8")
     doi_sentences = json.load(doi_sentence_file)
     doi_sentence_file.close()
 
     tokenized_sentences = []
     
-    doi_tokenized_file = open(args.result_location + "tokens-2019.tsv", "w", encoding="utf-8", newline="")
+    doi_tokenized_file = open(args.result_location + "\\tokens\\tokens-2022.tsv", "w", encoding="utf-8", newline="")
     writer= csv.writer(doi_tokenized_file, delimiter="\t")
     for doi_sentence in doi_sentences:
         #writer.writerow(["#" + doi_sentence])
@@ -54,7 +54,7 @@ def main_dep(args):
 
     doi_xpos_file.close()
 
-    doi_dep_file = open(args.result_location + "pos-2019-dep.tsv", "w", encoding="utf-8", newline="")
+    doi_dep_file = open(args.result_location + "pos-all-dep.tsv", "w", encoding="utf-8", newline="")
     writer = csv.writer(doi_dep_file, delimiter="\t")
     for doi_pos in doi_pos_list:
         writer.writerow(doi_pos)
@@ -68,7 +68,7 @@ def main_ner(args):
 
     tokenized_sentences = []
     
-    doi_tokenized_file = open(args.result_location + "tokens-2019-for-ner.tsv", "w", encoding="utf-8", newline="")
+    doi_tokenized_file = open(args.result_location + "tokens-all-for-ner.tsv", "w", encoding="utf-8", newline="")
     writer= csv.writer(doi_tokenized_file, delimiter="\t")
     for doi_sentence in doi_sentences:
         #writer.writerow(["#" + doi_sentence])
@@ -88,11 +88,11 @@ def main_ner(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extraction of Maltese Triples from our datasources which are DOI and Budget Data")
-    parser.add_argument('--data_location', type=str, default='data\\DOI\\triples\\mt\\sentences-2019.txt')
-    parser.add_argument('--upos_data_location', type=str, default='data\\DOI\\triples\\mt\\upos-2019.tsv')
-    parser.add_argument('--xpos_data_location', type=str, default='data\\DOI\\triples\\mt\\xpos-2019.tsv')
+    parser.add_argument('--data_location', type=str, default='data\\DOI\\triples\\mt\\sentences\\')
+    parser.add_argument('--upos_data_location', type=str, default='data\\DOI\\triples\\mt\\upos-all.tsv')
+    parser.add_argument('--xpos_data_location', type=str, default='data\\DOI\\triples\\mt\\xpos-all.tsv')
     parser.add_argument('--result_location', type=str, default='data\\DOI\\triples\\mt\\')
-    parser.add_argument('--stage', type=str, default="NER") #POS, DEP, NER
+    parser.add_argument('--stage', type=str, default="POS") #POS, DEP, NER
 
     args = parser.parse_args()
 

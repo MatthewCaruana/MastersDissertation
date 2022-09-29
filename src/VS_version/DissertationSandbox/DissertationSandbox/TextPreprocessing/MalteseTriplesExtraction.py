@@ -7,6 +7,7 @@ import os.path
 import csv
 import re
 import conllu
+import time
 
 import stanza
 from stanza.server import CoreNLPClient
@@ -33,20 +34,21 @@ def handle_DOI(args):
     for single_doi in doi_data:
         split_sentences = re.split(r"\.|\?|\!", single_doi["Content"])
         if "en" in single_doi["Number"]:
-            if single_doi["Date"][6:] == "2019":
-                english_doi_sentences.extend(split_sentences)
+            #if single_doi["Date"][6:] == "1997":
+            english_doi_sentences.extend(split_sentences)
         else:
-            if single_doi["Date"][6:] == "2019":
-                maltese_doi_sentences.extend(split_sentences)
+            #if single_doi["Date"][6:] == "2022":
+            maltese_doi_sentences.extend(split_sentences)
 
     print("Saving Maltese Content")
     if args.skip_mt == False:
+        print("Saving Maltese DOI sentences")
+        if not os.path.isfile(args.result_location + "mt\\sentences-2022.txt"):
+            with open(args.result_location + "mt\\sentences-2022.txt", 'w', encoding="utf-8") as file:
+                json.dump(maltese_doi_sentences, file, ensure_ascii = False)
+
         maltese_doi_extractions = load_doi_dependency_tree(args.maltese_doi_data_location)
 
-        print("Saving Maltese DOI sentences")
-        if not os.path.isfile(args.result_location + "mt\\sentences-2019.txt"):
-            with open(args.result_location + "mt\\sentences-2019.txt", 'w', encoding="utf-8") as file:
-                json.dump(maltese_doi_sentences, file, ensure_ascii = False)
 
         print("Saving Maltese DOI triple extractions")
         if not os.path.isfile(args.result_location + "mt\\triples.json"):
@@ -91,16 +93,22 @@ def handle_DOI(args):
 
     print("Saving English Content")
     if args.skip_eng == False:
+        start_time = time.time()
         english_doi_extractions = extract_english_triples(english_doi_sentences)
 
+        stats_file = open(args.result_location + "statistics.txt", "w")
+        stats_file.write("Triples Generated: " + str(len(english_doi_extractions)))
+        stats_file.write("Time Taken: " + str(time.time()-start_time) + " in seconds")
+        stats_file.close()
+
         print("Saving English DOI sentences")
-        if not os.path.isfile(args.result_location + "en\\sentences-2019.txt"):
-            with open(args.result_location + "en\\sentences-2019.txt", 'w', encoding="utf-8") as file:
+        if not os.path.isfile(args.result_location + "en\\sentences-all.txt"):
+            with open(args.result_location + "en\\sentences-all.txt", 'w', encoding="utf-8") as file:
                 json.dump(english_doi_sentences, file, ensure_ascii = False)
 
         print("Saving English DOI triple extractions")
-        if not os.path.isfile(args.result_location + "en\\triples-2019.json"):
-            with open(args.result_location + "en\\triples-2019.json", 'w', encoding="utf-8") as file:
+        if not os.path.isfile(args.result_location + "en\\triples-all.json"):
+            with open(args.result_location + "en\\triples-all.json", 'w', encoding="utf-8") as file:
                 extraction_string = json.dumps([extraction.__dict__ for extraction in english_doi_extractions])
                 file.write(extraction_string)
 
@@ -215,8 +223,8 @@ if __name__ == "__main__":
     parser.add_argument('--maltese_doi_data_location', type=str, default='data\\DOI\\triples\\mt\\dep-2019.tsv')
     parser.add_argument('--result_location', type=str, default='data\\DOI\\triples\\')
     parser.add_argument('--dataset', type=str, default="DOI")
-    parser.add_argument('--skip_eng', type=bool, default=True)
-    parser.add_argument('--skip_mt', type=bool, default=False)
+    parser.add_argument('--skip_eng', type=bool, default=False)
+    parser.add_argument('--skip_mt', type=bool, default=True)
 
     args = parser.parse_args()
     main(args)

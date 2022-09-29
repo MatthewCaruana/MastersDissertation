@@ -65,6 +65,21 @@ def load_simple_questions(location):
 
     return train, valid, test
 
+def load_doi_questions(location):
+    train = pd.read_csv(location + "train.txt", sep="\t", header= None)
+    #train.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
+    train = DatasetUtils.FormatDOIForRelationPrediction(train)
+
+    valid = pd.read_csv(location + "valid.txt", sep="\t", header=None)
+    #valid.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
+    valid = DatasetUtils.FormatDOIForRelationPrediction(valid)
+
+    test = pd.read_csv(location + "test.txt", sep="\t", header=None)
+    #test.colums = ["Name", "EntityID", "EntityText", "Relation", "ResultID", "Question", "Entities"]
+    test = DatasetUtils.FormatDOIForRelationPrediction(test)
+
+    return train, valid, test
+
 def save_responses(original_relations, responses, mode, location):
     print("Starting response gathering for " + mode)
 
@@ -81,7 +96,7 @@ def save_responses(original_relations, responses, mode, location):
     for predicted_index in new_predicted:
         file.write(mode + "-" + str(count) + "\t")
 
-        file.write(original_relations[predicted_index])
+        file.write(original_relations[predicted_index+1])
         file.write("\n")
         count += 1
     
@@ -98,6 +113,9 @@ def separate_dataset(data, dataset):
     if dataset == "SimpleQuestions":
         data_x = DatasetUtils.FormatSimpleQuestionsForQuestionOnly(data)
         data_y = DatasetUtils.FormatSimpleQuestionsForRelationOnly(data)
+    elif dataset == "DOI":
+        data_x = DatasetUtils.FormatDOIForQuestionOnly(data)
+        data_y = DatasetUtils.FormatDOIForRelationOnly(data)
 
     return data_x, data_y
 
@@ -108,6 +126,8 @@ def main(args):
     # Load training data
     if args.dataset == "SimpleQuestions":
         train, valid, test = load_simple_questions(args.location)
+    elif args.dataset == "DOI":
+        train, valid, test = load_doi_questions(args.location)
 
 
     (train_x, train_y) = separate_dataset(train, args.dataset)
@@ -152,22 +172,23 @@ def main(args):
     valid_y = DatasetUtils.decode_relations(inverse_dictionary, valid_y)
     test_y = DatasetUtils.decode_relations(inverse_dictionary, test_y)
 
-    save_responses(train_y, training_responses, "train", args.results_location + args.dataset + "\\Responses\\")
-    save_responses(test_y, testing_responses, "test", args.results_location + args.dataset + "\\Responses\\")
-    save_responses(valid_y, validation_responses, "valid", args.results_location + args.dataset + "\\Responses\\")
+    save_responses(inverse_dictionary, training_responses, "train", args.results_location + args.dataset + "\\Responses\\")
+    save_responses(inverse_dictionary, testing_responses, "test", args.results_location + args.dataset + "\\Responses\\")
+    save_responses(inverse_dictionary, validation_responses, "valid", args.results_location + args.dataset + "\\Responses\\")
 
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
-    parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    parser = argparse.ArgumentParser(description="Relation Prediction module training/testing framework")
+    #parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
     parser.add_argument('--language',type=str, default="en")
     parser.add_argument('--do_training', type=bool, default=True)
-    parser.add_argument('--dataset', type=str, default="SimpleQuestions")
+    parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--model_location', type=str, default="RelationPrediction\\Models\\")
-    parser.add_argument('--model_name', type=str, default="nineth_model_400")
+    parser.add_argument('--model_name', type=str, default="doi_model_first")
     parser.add_argument('--results_location', type=str, default="RelationPrediction\\Results\\")
-    parser.add_argument('--mode', type=str, default="LSTM")
+    parser.add_argument('--mode', type=str, default="LSTM-DOI")
 
     args = parser.parse_args()
     main(args)

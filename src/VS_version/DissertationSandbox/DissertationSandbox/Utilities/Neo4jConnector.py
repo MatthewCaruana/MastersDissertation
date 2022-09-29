@@ -73,7 +73,6 @@ class Neo4jConnector():
             + node + "', '" \
             + "'*')"
         self.query(string, db)
-        print("Graph Created")
 
     def create_graph_for_relation_node(self, relation, node, name, db="neo4j"):
         # this structure will allow me to create a spanning Tree of 2 hops to then be able to measure the graph analytics
@@ -84,7 +83,6 @@ class Neo4jConnector():
         string = "CALL gds.graph.project.cypher('" + name + "', '" + nodeString + "', '" + relationString + "')"
        
         self.query(string, db)
-        print("Graph Created")
 
     #['CD', 'JJ', 'JJS', 'NN','NNP', 'NNS', 'RB', 'VB', 'VBD', 'VBG', 'VBN']
     def create_graph_for_relation(self, relation, name, db="neo4j"):
@@ -92,12 +90,10 @@ class Neo4jConnector():
             + "'*', '" \
             + relation + "')"
         self.query(string, db)
-        print("Graph Created")
 
     def drop_graph(self, name, db="neo4j"):
         string = "CALL gds.graph.drop('" + name + "') YIELD graphName;"
         self.query(string, db)
-        print("Graph Removed")
 
     def remove_all(self, db="neo4j"):
         remove_related_nodes = "match (a) -[r] -> () delete a, r"
@@ -125,5 +121,5 @@ class Neo4jConnector():
         string = "MATCH (n:Entity {Text: '"+ node + "'})-[r]-(m) RETURN n,r,m"
 
     def GetForEntityRelation(self, entity, relation, db="neo4j"):
-        string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text = '" + entity + "' RETURN p"
+        string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text = \"" + entity + "\" RETURN p"
         return self.query(string, db)

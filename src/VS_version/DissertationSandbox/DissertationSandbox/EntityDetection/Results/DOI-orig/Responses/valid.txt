@@ -1,0 +1,16 @@
+valid:
+valid-1	Attorney
+valid-2	contributing
+valid-3	exercising functions
+valid-4	Navy
+valid-5	the old University undergoing restoration
+valid-6	invest
+valid-7	witness
+valid-8	did
+valid-9	Farrugia
+valid-10	
+valid-11	contact
+valid-12	the cooperative audit
+valid-13	benefit
+valid-14	Chris Cardona
+valid-15	
