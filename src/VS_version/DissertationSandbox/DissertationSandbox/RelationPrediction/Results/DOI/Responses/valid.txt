@@ -1,16 +1,22 @@
 valid:
-valid-1	was leased for
-valid-2	implement upgrades to
-valid-3	implement upgrades to
-valid-4	was leased for
-valid-5	are grateful to
-valid-6	will feature
+valid-1	will feature
+valid-2	are nearing
+valid-3	implement reforms towards
+valid-4	added in
+valid-5	for
+valid-6	invested
 valid-7	witnessed
-valid-8	referred to
-valid-9	are grateful to
-valid-10	advocate to
-valid-11	will feature
-valid-12	announce
-valid-13	implement upgrades to
-valid-14	implement upgrades to
-valid-15	will feature
+valid-8	held
+valid-9	visited
+valid-10	85 % of cost
+valid-11	contact
+valid-12	carried out
+valid-13	85 % of cost
+valid-14	also discussed
+valid-15	is with
+valid-16	pays
+valid-17	addressed
+valid-18	for
+valid-19	is with
+valid-20	part of
+valid-21	visited

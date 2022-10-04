@@ -31,13 +31,13 @@ class RNNRelationPrediction:
     def __init__(self, lbl_size, word_count):
         print("Instantiated RNN Relation Predictor")
         self.hidden_size = 256
-        self.rnn_dropout = 0.8
+        self.rnn_dropout = 0.3
         self.label_size = lbl_size
 
         np.random.seed(456)
-        self.iterations = 400
+        self.iterations = 1000
 
-        self.dense_embedding = 32 #64 # Dimension of the dense embedding
+        self.dense_embedding = 16 #64 # Dimension of the dense embedding
         self.lstm_units = 16 #64
         self.dense_units = 100
         self.word_count = word_count
@@ -71,11 +71,13 @@ class RNNRelationPrediction:
         if mode == "LSTM-DOI":
             self.model.add(layers.Embedding(self.word_count, self.dense_embedding))
             self.model.add(layers.Bidirectional(layers.LSTM(self.dense_embedding)))
+            #self.model.add(layers.Dense(self.label_size, activation="relu"))
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.BatchNormalization())
-            self.model.add(layers.Dense(self.label_size * 2, activation="relu"))
+            self.model.add(layers.Dense(self.label_size/2, activation="relu"))
             self.model.add(layers.Dropout(self.rnn_dropout))
-            self.model.add(layers.Dense(self.label_size, activation="softmax"))
+            self.model.add(layers.Dense(self.label_size))
+            self.model.add(layers.Activation("softmax"))
 
         self.model.compile(loss="categorical_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
         self.model.summary()

@@ -20,13 +20,11 @@ def load_responses(file_location):
     for line in train_file:
         train_results.append(line.split("\t"))
 
-
     train_file.close()
 
     test_file = open(file_location + "test.txt", "r", encoding="utf-8")
     for line in test_file:
         test_results.append(line.split("\t"))
-
 
     test_file.close()
 
@@ -34,7 +32,6 @@ def load_responses(file_location):
     for line in valid_file:
         valid_results.append(line.split("\t"))
         
-
     valid_file.close()
 
     return train_results, test_results, valid_results
@@ -103,17 +100,17 @@ def get_responses(neo4jConnector, data_list, database):
         query_results = neo4jConnector.GetForEntityRelation(data[1], data[2], database)
 
         if query_results == []:
-            responses.append([data[0], []])
+            responses.append([data[0], [], []])
         else:
-            scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
-            responses.append([data[0], scored_responses])
+            all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
+            responses.append([data[0], scored_responses, all_responses])
 
     return responses
 
 def score_responses(neo4jConnector, root, relation, responses, database):
     scored_responses = []
     if len(responses) == 1:
-        return [responses[0][0].end_node["ID"], responses[0][0].end_node["Text"], responses[0][0].end_node["Type"], 1]
+        return [responses[0][0].end_node["ID"], responses[0][0].end_node["Text"]],[responses[0][0].end_node["ID"], responses[0][0].end_node["Text"], responses[0][0].end_node["Type"], 1]
     else:
         #create graph for relation and node
         neo4jConnector.create_graph_for_relation_node(relation, root, "tempGraph", database)
@@ -122,24 +119,28 @@ def score_responses(neo4jConnector, root, relation, responses, database):
         #betweenness = neo4jConnector.execute_betweenness("tempGraph", database)
         #degree = neo4jConnector.execute_degree_centrality("tempGraph", database)
 
-        scored_responses = prioritize_results(responses, rank)
+        all_responses, scored_responses = prioritize_results(responses, rank)
 
         neo4jConnector.drop_graph("tempGraph", database)
 
-    return scored_responses
+    return all_responses, scored_responses
 
 def prioritize_results(responses, pagerank):
     scores = []
 
     if responses == None or responses == []:
-        return []
+        return [], []
     else:
         if pagerank == None or pagerank == []:
-            return []
+            return [],[]
         else:
+            all_results = [[response[0].end_node.id, response[0].end_node["Text"]] for response in responses]
             best_result = [response[0].end_node for response in responses if response[0].end_node.id == pagerank[0][0]]
 
-            return [best_result[0].id, best_result[0]["Text"], pagerank[0][2]]
+            if best_result == []:
+                return all_results, []
+            else:
+                return all_results, [best_result[0].id, best_result[0]["Text"], pagerank[0][2]]
 
     #for response in responses:
     #    pagerank_single = [p for p in pagerank if p[0] == response[0].end_node["ID"]]
@@ -157,6 +158,7 @@ def evaluate(actual_results, expected_results, mode):
 
     correct_match = 0
     nothing_found = 0
+    found_count = 0
     total = len(actual_results)
 
 
@@ -166,12 +168,30 @@ def evaluate(actual_results, expected_results, mode):
 
         if actual_result[1] == []:
             nothing_found = nothing_found + 1
-        elif any(actual_result[1][1] in x for x in expected_result):
-            correct_match = correct_match + 1
+        else:
+            query_text = actual_result[1][1]
+            if query_text != None:
+                if any(actual_result[1][1] in x for x in expected_result):
+                    correct_match = correct_match + 1
+            
+            if actual_result[2] != None:
+                if isinstance(actual_result[2][0], list):
+                    for all_result_single in actual_result[2]:
+                        if all_result_single[1] != None:
+                            if any(all_result_single[1] in x for x in expected_result):
+                                found_count = found_count + 1
+                elif isinstance(actual_result[2][0], str):
+                    if actual_result[2][1] != None:
+                        if any(actual_result[2][1] in x for x in expected_result):
+                            found_count = found_count + 1
 
     accuracy = correct_match/total * 100
+    found_accuracy = found_count/total * 100
 
-    return accuracy, nothing_found
+    print("Accuracy:\t" + str(accuracy))
+    print("Found Accuracy:\t" + str(found_accuracy))
+
+    return accuracy, found_accuracy, nothing_found
 
 
 def save_results(results, location, mode):
@@ -181,7 +201,7 @@ def save_results(results, location, mode):
     file.truncate()
 
     for result in results:
-        file.write(result[0] + "\t" + str(result[1]) + "\n")
+        file.write(result[0] + "\t" + str(result[1]) + "\t" + str(result[2]) + "\n")
 
     file.close()
     print("Finished saving results for " + mode)
@@ -203,7 +223,7 @@ def get_responses_saved(location, mode):
     file = open(location + mode + ".txt", 'r', encoding="utf-8")
 
     for line in file:
-        data.append([line.split("\t")[0], ast.literal_eval(line.split("\t")[1])])
+        data.append([line.split("\t")[0], ast.literal_eval(line.split("\t")[1]), ast.literal_eval(line.split("\t")[2])])
     
     file.close()
     return data
@@ -240,9 +260,9 @@ def main(args):
         test_y = get_responses_saved(args.results_evidence_integration, "Test")
         valid_y = get_responses_saved(args.results_evidence_integration, "Valid")
 
-    train_acc, train_nothing_found = evaluate(train_y, expected_train, "Train")
-    test_acc,test_nothing_found = evaluate(test_y, expected_test, "Test")
-    valid_acc,valid_nothing_found = evaluate(valid_y, expected_valid, "Valid")
+    train_acc, train_found_acc, train_nothing_found = evaluate(train_y, expected_train, "Train")
+    test_acc, test_found_acc, test_nothing_found = evaluate(test_y, expected_test, "Test")
+    valid_acc, valid_found_acc, valid_nothing_found = evaluate(valid_y, expected_valid, "Valid")
 
     save_evaluations(train_acc, args.results_evidence_integration_stats, "Train")
     save_evaluations(test_acc, args.results_evidence_integration_stats, "Test")
@@ -263,7 +283,7 @@ if __name__ == "__main__":
     parser.add_argument('--neo4j_database', type=str, default="fb2m")
     parser.add_argument('--language',type=str, default="en")
     parser.add_argument('--dataset', type=str, default="SimpleQuestions")
-    parser.add_argument('--skip', type=bool, default=False)
+    parser.add_argument('--skip', type=bool, default=True)
 
 
     args = parser.parse_args()

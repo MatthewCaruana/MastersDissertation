@@ -1,1 +1,1 @@
-ValidAccuracy:	0.13333333333333333
+ValidAccuracy:	0.23809523809523808

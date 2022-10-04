@@ -31,7 +31,7 @@ def main_pos(args):
 def main_dep(args):
 
 
-    doi_upos_file = open(args.upos_data_location, 'r', encoding="utf-8")
+    doi_upos_file = open(args.upos_data_location + "upos-2022.tsv", 'r', encoding="utf-8")
     reader = csv.reader(doi_upos_file, delimiter="\t")
     doi_pos_list = []
     for row in reader:
@@ -42,7 +42,7 @@ def main_dep(args):
 
     doi_upos_file.close()
 
-    doi_xpos_file = open(args.xpos_data_location, 'r', encoding="utf-8")
+    doi_xpos_file = open(args.xpos_data_location + "xpos-2022.tsv", 'r', encoding="utf-8")
     reader = csv.reader(doi_xpos_file, delimiter="\t")
     i = 0
     for row in reader:
@@ -54,7 +54,7 @@ def main_dep(args):
 
     doi_xpos_file.close()
 
-    doi_dep_file = open(args.result_location + "pos-all-dep.tsv", "w", encoding="utf-8", newline="")
+    doi_dep_file = open(args.result_location + "pos-2022-dep.tsv", "w", encoding="utf-8", newline="")
     writer = csv.writer(doi_dep_file, delimiter="\t")
     for doi_pos in doi_pos_list:
         writer.writerow(doi_pos)
@@ -89,10 +89,10 @@ def main_ner(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extraction of Maltese Triples from our datasources which are DOI and Budget Data")
     parser.add_argument('--data_location', type=str, default='data\\DOI\\triples\\mt\\sentences\\')
-    parser.add_argument('--upos_data_location', type=str, default='data\\DOI\\triples\\mt\\upos-all.tsv')
-    parser.add_argument('--xpos_data_location', type=str, default='data\\DOI\\triples\\mt\\xpos-all.tsv')
-    parser.add_argument('--result_location', type=str, default='data\\DOI\\triples\\mt\\')
-    parser.add_argument('--stage', type=str, default="POS") #POS, DEP, NER
+    parser.add_argument('--upos_data_location', type=str, default='data\\DOI\\triples\\mt\\POS\\upos\\')
+    parser.add_argument('--xpos_data_location', type=str, default='data\\DOI\\triples\\mt\\POS\\xpos\\')
+    parser.add_argument('--result_location', type=str, default='data\\DOI\\triples\\mt\\DEP\\init\\')
+    parser.add_argument('--stage', type=str, default="DEP") #POS, DEP, NER
 
     args = parser.parse_args()
 

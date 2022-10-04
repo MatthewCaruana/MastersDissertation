@@ -154,7 +154,7 @@ class NeuralEntityDetection:
 
         np.random.seed(456)
         self.batch_size = 500
-        self.iterations = 50
+        self.iterations = 1000
 
         self.dense_embedding = 16 # Dimension of the dense embedding
         self.lstm_units = 16
@@ -176,7 +176,7 @@ class NeuralEntityDetection:
             self.model.add(layers.Dense(self.label_size))
         elif mode == "LSTM":
             self.model.add(layers.Embedding(self.word_count, self.dense_embedding, input_length=300))
-            self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, recurrent_dropout=self.rnn_dropout, return_sequences=True)))
+            self.model.add(layers.Bidirectional(layers.LSTM(self.lstm_units, return_sequences=True)))
 
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))

@@ -121,5 +121,9 @@ class Neo4jConnector():
         string = "MATCH (n:Entity {Text: '"+ node + "'})-[r]-(m) RETURN n,r,m"
 
     def GetForEntityRelation(self, entity, relation, db="neo4j"):
-        string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text = \"" + entity + "\" RETURN p"
+        if len(entity) < 3:
+            string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text = \"" + entity + "\" RETURN p"
+        else:
+            string= "MATCH p=(n)-[r:"+relation+"]->() WHERE n.Text CONTAINS \"" + entity + "\" RETURN p"
+
         return self.query(string, db)

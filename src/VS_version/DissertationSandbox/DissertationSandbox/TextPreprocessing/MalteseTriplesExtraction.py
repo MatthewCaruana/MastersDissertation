@@ -150,19 +150,19 @@ def handle_DOI(args):
         f_relations_output.close()
 
 
-def handle_budgets(args):
-    return
-
 def load_doi_dependency_tree(location):
     sentences = []
-    file = open(location,'r', encoding="utf-8")
-    for row in conllu.parse_incr(file):
-        tree = row.to_tree()
-        triples = extract_maltese_triples(tree)
-        if not triples == []:
-            sentence = " ".join([item['form'] for item in row])
-            sentences.append({"sentence": sentence, "triples": triples})
-    file.close()
+    file_names = [f for f in os.listdir(location) if os.path.isfile(os.path.join(location, f))]
+
+    for file_name in file_names:
+        file = open(location + file_name, 'r', encoding="utf-8")
+        for row in conllu.parse_incr(file):
+            tree = row.to_tree()
+            triples = extract_maltese_triples(tree)
+            if not triples == []:
+                sentence = " ".join([item['form'] for item in row])
+                sentences.append({"sentence": sentence, "triples": triples})
+        file.close()
 
     return sentences
 
@@ -220,11 +220,11 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extraction of Maltese Triples from our datasources which are DOI and Budget Data")
     parser.add_argument('--data_location', type=str, default='data\\DOI\\data\\DOIContent.json')
-    parser.add_argument('--maltese_doi_data_location', type=str, default='data\\DOI\\triples\\mt\\dep-2019.tsv')
+    parser.add_argument('--maltese_doi_data_location', type=str, default='data\\DOI\\triples\\mt\\DEP\\final\\')
     parser.add_argument('--result_location', type=str, default='data\\DOI\\triples\\')
     parser.add_argument('--dataset', type=str, default="DOI")
-    parser.add_argument('--skip_eng', type=bool, default=False)
-    parser.add_argument('--skip_mt', type=bool, default=True)
+    parser.add_argument('--skip_eng', type=bool, default=True)
+    parser.add_argument('--skip_mt', type=bool, default=False)
 
     args = parser.parse_args()
     main(args)

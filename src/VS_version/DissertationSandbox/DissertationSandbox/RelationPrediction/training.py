@@ -149,7 +149,7 @@ def main(args):
     test_y = DatasetUtils.encode_relations(test_y, relation_dictionary)
 
     if args.do_training:
-        model.train(train_x, train_y, test_x, test_y, args.mode, args.dataset, args.model_location + args.model_name)
+        model.train(train_x, train_y, valid_x, valid_y, args.mode, args.dataset, args.model_location + args.model_name)
     else:
         model.load_model(args.model_location + args.model_name + ".h5")
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     parser.add_argument('--do_training', type=bool, default=True)
     parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--model_location', type=str, default="RelationPrediction\\Models\\")
-    parser.add_argument('--model_name', type=str, default="doi_model_first")
+    parser.add_argument('--model_name', type=str, default="doi_model_test")
     parser.add_argument('--results_location', type=str, default="RelationPrediction\\Results\\")
     parser.add_argument('--mode', type=str, default="LSTM-DOI")
 

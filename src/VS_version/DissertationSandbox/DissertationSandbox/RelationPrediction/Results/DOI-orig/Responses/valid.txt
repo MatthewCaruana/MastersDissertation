@@ -1,0 +1,16 @@
+valid:
+valid-1	was leased for
+valid-2	implement upgrades to
+valid-3	implement upgrades to
+valid-4	was leased for
+valid-5	are grateful to
+valid-6	will feature
+valid-7	witnessed
+valid-8	referred to
+valid-9	are grateful to
+valid-10	advocate to
+valid-11	will feature
+valid-12	announce
+valid-13	implement upgrades to
+valid-14	implement upgrades to
+valid-15	will feature
