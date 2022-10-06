@@ -91,7 +91,7 @@ class DatasetUtils:
 
     @staticmethod
     def FormatDOIForEvidenceIntegration(data):
-        selected = data[[0,1,4]]
+        selected = data[[0,4]]
 
         data_reformated = selected.copy()
         return data_reformated

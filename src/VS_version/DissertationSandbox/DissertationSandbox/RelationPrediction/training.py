@@ -180,15 +180,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Relation Prediction module training/testing framework")
-    #parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
-    parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
+    parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    #parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=True)
-    parser.add_argument('--dataset', type=str, default="DOI")
+    parser.add_argument('--do_training', type=bool, default=False)
+    parser.add_argument('--dataset', type=str, default="SimpleQuestions")
     parser.add_argument('--model_location', type=str, default="RelationPrediction\\Models\\")
-    parser.add_argument('--model_name', type=str, default="doi_model_test")
+    parser.add_argument('--model_name', type=str, default="nineth_model_400")
     parser.add_argument('--results_location', type=str, default="RelationPrediction\\Results\\")
-    parser.add_argument('--mode', type=str, default="LSTM-DOI")
+    parser.add_argument('--mode', type=str, default="LSTM")
 
     args = parser.parse_args()
     main(args)

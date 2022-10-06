@@ -286,7 +286,7 @@ if __name__ == "__main__":
     #parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
     parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=True)
+    parser.add_argument('--do_training', type=bool, default=False)
     parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--model_location', type=str, default="EntityDetection\\Models\\")
     parser.add_argument('--model_name', type=str, default="doi_model_test")

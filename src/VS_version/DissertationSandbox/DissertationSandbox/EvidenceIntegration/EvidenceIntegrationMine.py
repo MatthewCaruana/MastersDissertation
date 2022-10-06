@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from tqdm import tqdm
 import ast
+from nltk import ngrams
 
 sys.path.insert(0, "Utilities")
 
@@ -49,6 +50,22 @@ def load_simple_questions(location, freebase_conversion_file):
     train, valid, test = reformat_freebase(freebase_conversion_file, train, valid, test)
 
     return train, valid, test
+
+def load_doi(location):
+    train = pd.read_csv(location + "train.txt", sep="\t", header= None)
+    train = DatasetUtils.FormatDOIForEvidenceIntegration(train)
+
+    valid = pd.read_csv(location + "valid.txt", sep="\t", header=None)
+    valid = DatasetUtils.FormatDOIForEvidenceIntegration(valid)
+
+    test = pd.read_csv(location + "test.txt", sep="\t", header=None)
+    test = DatasetUtils.FormatDOIForEvidenceIntegration(test)
+
+    train_results = [train_single[1] for train_single in train.values]
+    test_results = [test_single[1] for test_single in test.values]
+    valid_results = [valid_single[1] for valid_single in valid.values]
+
+    return train_results, valid_results, test_results
 
 def reformat_freebase(file_location, train, valid, test):
     file = open(file_location, "r", encoding="utf-8")
@@ -99,11 +116,35 @@ def get_responses(neo4jConnector, data_list, database):
     for data in tqdm(data_list):
         query_results = neo4jConnector.GetForEntityRelation(data[1], data[2], database)
 
-        if query_results == []:
-            responses.append([data[0], [], []])
-        else:
-            all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
-            responses.append([data[0], scored_responses, all_responses])
+        if database == "fb2m":
+            if query_results == [] or query_results == None:
+                responses.append([data[0], [], []])
+            else:
+                all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
+                responses.append([data[0], scored_responses, all_responses])
+        elif database == "doi-en":
+            if query_results == [] or query_results == None:
+                #generate n-grams of max 3 characters
+                all_responses = []
+                scored_responses = []
+                if len(data[1].split()) > 1:
+                    ngram_entities = ngrams(data[1].split(), len(data[1].split()))
+                    for entity_grouping in ngram_entities:
+                        for entity in entity_grouping:
+                            query_results = neo4jConnector.GetForEntityRelation(entity, data[2], database)
+
+                            if query_results == [] or query_results == None:
+                                #responses.append([data[0], [], []])
+                                print("Hi")
+                            else:
+                                all_responses_ngram, scored_responses_ngram = score_responses(neo4jConnector, entity, data[2], query_results, database)
+                                all_responses.extend(all_responses_ngram)
+                                scored_responses.extend(scored_responses_ngram)
+                responses.append([data[0], scored_responses, all_responses])
+            else:
+                all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
+                responses.append([data[0], scored_responses, all_responses])
+
 
     return responses
 
@@ -118,12 +159,21 @@ def score_responses(neo4jConnector, root, relation, responses, database):
         rank = neo4jConnector.execute_pagerank("tempGraph", database)
         #betweenness = neo4jConnector.execute_betweenness("tempGraph", database)
         #degree = neo4jConnector.execute_degree_centrality("tempGraph", database)
-
-        all_responses, scored_responses = prioritize_results(responses, rank)
+        if rank == None:
+            all_responses, scored_responses = allocate_results(responses)
+        else:
+            all_responses, scored_responses = prioritize_results(responses, rank)
 
         neo4jConnector.drop_graph("tempGraph", database)
 
     return all_responses, scored_responses
+
+def allocate_results(responses):
+    all_responses = []
+    for response in responses:
+        all_responses.append([response[0].end_node.id, response[0].end_node["Text"]])
+
+    return all_responses, []
 
 def prioritize_results(responses, pagerank):
     scores = []
@@ -171,15 +221,16 @@ def evaluate(actual_results, expected_results, mode):
         else:
             query_text = actual_result[1][1]
             if query_text != None:
-                if any(actual_result[1][1] in x for x in expected_result):
+                if any(actual_result[1][1] in x for x in expected_result) or actual_result[1][1] == expected_result:
                     correct_match = correct_match + 1
             
             if actual_result[2] != None:
                 if isinstance(actual_result[2][0], list):
                     for all_result_single in actual_result[2]:
                         if all_result_single[1] != None:
-                            if any(all_result_single[1] in x for x in expected_result):
+                            if any(all_result_single[1] in x for x in expected_result) or all_result_single[1] == expected_result:
                                 found_count = found_count + 1
+                                break
                 elif isinstance(actual_result[2][0], str):
                     if actual_result[2][1] != None:
                         if any(actual_result[2][1] in x for x in expected_result):
@@ -238,7 +289,10 @@ def main(args):
     #load results from relation prediction
     train_rp, test_rp, valid_rp = load_responses(args.results_relation_prediction)
 
-    expected_train, expected_valid, expected_test = load_simple_questions(args.data_location, args.freebase_conversion_file)
+    if (args.dataset == "SimpleQuestions"):
+        expected_train, expected_valid, expected_test = load_simple_questions(args.data_location, args.freebase_conversion_file)
+    elif(args.dataset == "DOI"):
+        expected_train, expected_valid, expected_test = load_doi(args.data_location)
 
     #Create querying framework
     neo4jConnector = Neo4jConnector(args.neo4j_url, args.neo4j_username, args.neo4j_password)
@@ -248,8 +302,8 @@ def main(args):
     valid_x = join_data(valid_ed, valid_rp)
 
     if(args.skip == False):
-        train_y = get_responses(neo4jConnector, train_x, args.neo4j_database)
         test_y = get_responses(neo4jConnector, test_x, args.neo4j_database)
+        train_y = get_responses(neo4jConnector, train_x, args.neo4j_database)
         valid_y = get_responses(neo4jConnector, valid_x, args.neo4j_database)
 
         save_results(train_y, args.results_evidence_integration, "Train")
@@ -271,19 +325,24 @@ def main(args):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
-    parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\SimpleQuestions\\Responses\\')
-    parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\Responses\\')
-    parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\')
-    parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\SimpleQuestions\\Responses\\')
+    #parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\SimpleQuestions\\Responses\\')
+    #parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\Responses\\')
+    #parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\')
+    #parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\SimpleQuestions\\Responses\\')
+    #parser.add_argument('--data_location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\DOI\\Responses\\')
+    parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\DOI\\Responses\\')
+    parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\DOI\\')
+    parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\DOI\\Responses\\')
     parser.add_argument('--freebase_conversion_file', type=str, default='data\\QuestionAnswering\\freebase_names\\FB5M.name.txt')
-    parser.add_argument('--data_location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    parser.add_argument('--data_location', type=str, default='data\\DOI\\QA\\english\\')
     parser.add_argument('--neo4j_url', type=str, default="bolt://localhost:14220")
     parser.add_argument('--neo4j_username', type=str, default="matthew")
     parser.add_argument('--neo4j_password', type=str, default="password")
-    parser.add_argument('--neo4j_database', type=str, default="fb2m")
+    parser.add_argument('--neo4j_database', type=str, default="doi-en")
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--dataset', type=str, default="SimpleQuestions")
-    parser.add_argument('--skip', type=bool, default=True)
+    parser.add_argument('--dataset', type=str, default="DOI")
+    parser.add_argument('--skip', type=bool, default=False)
 
 
     args = parser.parse_args()

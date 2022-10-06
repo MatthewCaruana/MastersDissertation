@@ -1,4 +1,3 @@
-valid:
 valid-1	will feature
 valid-2	are nearing
 valid-3	implement reforms towards
