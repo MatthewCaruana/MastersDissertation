@@ -119,8 +119,14 @@ def evaluate(actual, predicted, mode):
         count += 1
 
     accuracy = (true_pos + true_neg) / (true_pos + true_neg + false_pos + false_neg)
-    precision = true_pos / (true_pos + false_pos)
-    recall = true_pos / (true_pos + false_neg)
+    if true_pos + false_pos == 0:
+        precision = 0
+    else:
+        precision = true_pos / (true_pos + false_pos)
+    if (true_pos + false_neg) == 0:
+        recall = 0
+    else:
+        recall = true_pos / (true_pos + false_neg)
 
     if precision + recall == 0:
         f1 = 0
@@ -284,13 +290,13 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entity Detection module training/testing framework")
     #parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
-    parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
+    parser.add_argument('--location', type=str, default='data\\DOI\\QA\\maltese\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=False)
+    parser.add_argument('--do_training', type=bool, default=True)
     parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--model_location', type=str, default="EntityDetection\\Models\\")
-    parser.add_argument('--model_name', type=str, default="doi_model_test")
-    #parser.add_argument('--model_name', type=str, default="doi_model")
+    parser.add_argument('--model_name', type=str, default="doi_model_mt")
+    #parser.add_argument('--model_name', type=str, default="doi_model_test")
     parser.add_argument('--results_location', type=str, default="EntityDetection\\Results\\")
     parser.add_argument('--mode', type=str, default="LSTM")
 

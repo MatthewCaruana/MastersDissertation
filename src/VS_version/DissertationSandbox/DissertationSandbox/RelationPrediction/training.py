@@ -2,6 +2,7 @@ import argparse
 import sys
 import pandas as pd
 import tqdm
+import numpy as np
 
 sys.path.insert(0, "Utilities")
 
@@ -20,8 +21,11 @@ def evaluate(actual, predicted, mode, label_size):
     total = len(actual)
 
     count = 0
+    top5_indices_predicted = [np.argsort(predicted_single)[-5:] for predicted_single in predicted]
+
     predicted_normalized = predicted.argmax(axis=0)
     new_predicted = []
+    new_predicted_top_5 = []
     for row in predicted:
 
         highest_index = row.argmax(axis=0)
@@ -31,9 +35,22 @@ def evaluate(actual, predicted, mode, label_size):
 
         new_predicted.append(new_token)
 
+    for top5_indices in top5_indices_predicted:
+        row_prediction = []
+        for row in top5_indices:
+            new_token= [0]*label_size
+            new_token[row] = 1
+
+            row_prediction.append(new_token)
+
+        new_predicted_top_5.append(row_prediction)
+
     count = 0
     correct = 0
     incorrect = 0
+
+    correct_5 = 0
+    incorrect_5 = 0
     for predicted_row in new_predicted:
         actual_row = actual[count] # Search by Name
 
@@ -44,11 +61,23 @@ def evaluate(actual, predicted, mode, label_size):
 
         count += 1
 
+    count = 0
+    for predicted_rows_top5 in new_predicted_top_5:
+        actual_row = actual[count]
+        if actual_row in predicted_rows_top5:
+            correct_5 += 1
+        else:
+            incorrect_5 += 1
+
+        count += 1
+
     accuracy = correct / (correct + incorrect)
+    accuracy_top_5 = correct_5 / (correct_5 + incorrect_5)
 
     print("Accuracy: " + str(accuracy * 100))
+    print("Accuracy Top 5: " + str(accuracy_top_5 * 100))
 
-    return accuracy
+    return accuracy, accuracy_top_5
 
 def load_simple_questions(location):
     train = pd.read_csv(location + "train.txt", sep="\t", header= None)
@@ -84,6 +113,7 @@ def save_responses(original_relations, responses, mode, location):
     print("Starting response gathering for " + mode)
 
     predicted_len = len(responses)
+    top5_indices_predicted = [np.argsort(predicted_single)[-5:] for predicted_single in responses]
 
     count = 0
     new_predicted = []
@@ -91,7 +121,6 @@ def save_responses(original_relations, responses, mode, location):
         new_predicted.append(row.argmax())
 
     file = open(location + mode + ".txt", "w+", encoding="utf-8")
-    file.write(mode + ":\n")
     count = 1
     for predicted_index in new_predicted:
         file.write(mode + "-" + str(count) + "\t")
@@ -99,14 +128,30 @@ def save_responses(original_relations, responses, mode, location):
         file.write(original_relations[predicted_index+1])
         file.write("\n")
         count += 1
+    file.close()
+
+    file = open(location + mode + "_top_5.txt", "w+", encoding="utf-8")
+    count = 0
+    for predicted_rows_top5 in top5_indices_predicted:
+        file.write(mode + "-" + str(count) + "\t")
+
+        predictions = []
+        for prediction_index in predicted_rows_top5:
+            predictions.append(original_relations[prediction_index+1])
+
+        file.write(str(predictions))
+        file.write("\n")
+
+        count += 1
     
     file.close()
     print("Response gathering for " + mode + " completed")
 
-def save_evaluations(accuracy, mode, location):
+def save_evaluations(accuracy, accuracy_top_5, mode, location):
     file = open(location + mode +"_rp_results.txt", "w")
     file.write(mode)
-    file.write("Accuracy:\t" + str(accuracy))
+    file.write("\nAccuracy:\t" + str(accuracy))
+    file.write("\nAccuracy Top 5:\t" + str(accuracy_top_5))
     file.close()
 
 def separate_dataset(data, dataset):
@@ -160,13 +205,13 @@ def main(args):
     testing_responses = model.detect(test_x, "test set", args.dataset)
 
     # evaluate predicted with actual
-    train_accuracy = evaluate(train_y, training_responses, "train", len(relation_dictionary))
-    valid_accuracy = evaluate(valid_y, validation_responses, "valid", len(relation_dictionary))
-    test_accuracy = evaluate(test_y, testing_responses, "test", len(relation_dictionary))
+    train_accuracy, train_accuracy_top_5 = evaluate(train_y, training_responses, "train", len(relation_dictionary))
+    valid_accuracy, valid_accuracy_top_5 = evaluate(valid_y, validation_responses, "valid", len(relation_dictionary))
+    test_accuracy, test_accuracy_top_5 = evaluate(test_y, testing_responses, "test", len(relation_dictionary))
 
-    save_evaluations(train_accuracy, "Train", args.results_location + args.dataset + "\\")
-    save_evaluations(valid_accuracy, "Valid", args.results_location + args.dataset + "\\")
-    save_evaluations(test_accuracy, "Test", args.results_location + args.dataset + "\\")
+    save_evaluations(train_accuracy, train_accuracy_top_5, "Train", args.results_location + args.dataset + "\\")
+    save_evaluations(valid_accuracy, valid_accuracy_top_5, "Valid", args.results_location + args.dataset + "\\")
+    save_evaluations(test_accuracy, test_accuracy_top_5, "Test", args.results_location + args.dataset + "\\")
 
     train_y = DatasetUtils.decode_relations(inverse_dictionary, train_y)
     valid_y = DatasetUtils.decode_relations(inverse_dictionary, valid_y)
@@ -180,13 +225,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Relation Prediction module training/testing framework")
-    parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
-    #parser.add_argument('--location', type=str, default='data\\DOI\\QA\\english\\')
+    #parser.add_argument('--location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
+    parser.add_argument('--location', type=str, default='data\\DOI\\QA\\maltese\\')
     parser.add_argument('--language',type=str, default="en")
-    parser.add_argument('--do_training', type=bool, default=False)
-    parser.add_argument('--dataset', type=str, default="SimpleQuestions")
+    parser.add_argument('--do_training', type=bool, default=True)
+    parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--model_location', type=str, default="RelationPrediction\\Models\\")
-    parser.add_argument('--model_name', type=str, default="nineth_model_400")
+    parser.add_argument('--model_name', type=str, default="doi_model_mt")
     parser.add_argument('--results_location', type=str, default="RelationPrediction\\Results\\")
     parser.add_argument('--mode', type=str, default="LSTM")
 

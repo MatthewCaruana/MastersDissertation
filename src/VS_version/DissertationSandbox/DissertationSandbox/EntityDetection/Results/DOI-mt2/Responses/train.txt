@@ -1,0 +1,35 @@
+train-1	Lil Chetcuti
+train-2	
+train-3	Liem avveniment attenda Chris
+train-4	ic- Chairman
+train-5	Lil esponew fatti
+train-6	' tal- knisja
+train-7	qed jeżamina l- Uffiċċju
+train-8	X ' fetaħ
+train-9	Lil feraħ Joseph
+train-10	Lil min għażel il-
+train-11	X ' qed idaħħal il- gvern
+train-12	is- seminar
+train-13	Min servizz
+train-14	' l-
+train-15	it-
+train-16	Go liem
+train-17	Lil
+train-18	
+train-19	iqajjem musical
+train-20	X ' kienu qed iqassmu uffiċjali
+train-21	Is- settur
+train-22	Xi jkun ftehim
+train-23	Lil iktar dan il- programm
+train-24	X '
+train-25	X ' qed jibni
+train-26	'
+train-27	
+train-28	Lil
+train-29	L- iskema tgħin
+train-30	X ' inhi li qed timmanifattura
+train-31	X ' nediet l- Awtorità
+train-32	Lil torbot Politika
+train-33	trawwem l- Awtorità
+train-34	X ' waddbu uffiċjali
+train-35	ħatar

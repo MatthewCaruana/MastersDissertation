@@ -12,28 +12,47 @@ from Py2NeoConnector import *
 from Neo4jConnector import *
 
 
-def load_responses(file_location):
+def load_responses(file_location, top_5_files):
     train_results = []
     test_results = []
     valid_results = []
     
-    train_file = open(file_location + "train.txt", "r", encoding="utf-8")
-    for line in train_file:
-        train_results.append(line.split("\t"))
+    if top_5_files == False:
+        train_file = open(file_location + "train.txt", "r", encoding="utf-8")
+        for line in train_file:
+            train_results.append(line.split("\t"))
 
-    train_file.close()
+        train_file.close()
 
-    test_file = open(file_location + "test.txt", "r", encoding="utf-8")
-    for line in test_file:
-        test_results.append(line.split("\t"))
+        test_file = open(file_location + "test.txt", "r", encoding="utf-8")
+        for line in test_file:
+            test_results.append(line.split("\t"))
 
-    test_file.close()
+        test_file.close()
 
-    valid_file = open(file_location + "valid.txt", "r", encoding="utf-8")
-    for line in valid_file:
-        valid_results.append(line.split("\t"))
-        
-    valid_file.close()
+        valid_file = open(file_location + "valid.txt", "r", encoding="utf-8")
+        for line in valid_file:
+            valid_results.append(line.split("\t"))
+            
+        valid_file.close()
+    else:
+        train_file = open(file_location + "train_top_5.txt", "r", encoding="utf-8")
+        for line in train_file:
+            train_results.append(line.split("\t"))
+
+        train_file.close()
+
+        test_file = open(file_location + "test_top_5.txt", "r", encoding="utf-8")
+        for line in test_file:
+            test_results.append(line.split("\t"))
+
+        test_file.close()
+
+        valid_file = open(file_location + "valid_top_5.txt", "r", encoding="utf-8")
+        for line in valid_file:
+            valid_results.append(line.split("\t"))
+            
+        valid_file.close()
 
     return train_results, test_results, valid_results
 
@@ -101,18 +120,24 @@ def reformat_freebase(file_location, train, valid, test):
 
     return train_result, valid_result, test_result
 
-def join_data(entity_detection, relation_prediction):
+def join_data(entity_detection, relation_prediction, rp_top_5):
     length = len(entity_detection)
     joined_data = []
 
     for i in range(0, length):
-        joined_data.append([entity_detection[i][0], entity_detection[i][1][:-1], relation_prediction[i][1].split(".")[-1][:-1]])
+        rp_top_5_single = ast.literal_eval(rp_top_5[i][1])
+        rp_top_5_single = [rp_single.split(".")[-1] for rp_single in rp_top_5_single]
+
+        joined_data.append([entity_detection[i][0], entity_detection[i][1][:-1], relation_prediction[i][1].split(".")[-1][:-1], rp_top_5_single])
 
     return joined_data
 
 def get_responses(neo4jConnector, data_list, database):
     neo4jConnector.drop_graph("tempGraph", database)
+
     responses = []
+    responses_top_5 = []
+
     for data in tqdm(data_list):
         query_results = neo4jConnector.GetForEntityRelation(data[1], data[2], database)
 
@@ -122,7 +147,21 @@ def get_responses(neo4jConnector, data_list, database):
             else:
                 all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
                 responses.append([data[0], scored_responses, all_responses])
-        elif database == "doi-en":
+
+            for relation in data[3]:
+                query_results = neo4jConnector.GetForEntityRelation(data[1], relation, database)
+
+                response = []
+
+                if query_results == [] or query_results == None:
+                    response.append([[], []])
+                else:
+                    all_responses, scored_responses = score_responses(neo4jConnector, data[1], relation, query_results, database)
+                    response.append([scored_responses, all_responses])
+
+            responses_top_5.append([data[0], response])
+
+        elif database == "doi-en" or database == "doi-mt" or database == "doi-mt2":
             if query_results == [] or query_results == None:
                 #generate n-grams of max 3 characters
                 all_responses = []
@@ -145,8 +184,7 @@ def get_responses(neo4jConnector, data_list, database):
                 all_responses, scored_responses = score_responses(neo4jConnector, data[1], data[2], query_results, database)
                 responses.append([data[0], scored_responses, all_responses])
 
-
-    return responses
+    return responses, responses_top_5
 
 def score_responses(neo4jConnector, root, relation, responses, database):
     scored_responses = []
@@ -244,6 +282,54 @@ def evaluate(actual_results, expected_results, mode):
 
     return accuracy, found_accuracy, nothing_found
 
+def evaluateTop5(actual_results, expected_results, mode):
+    print("Starting Evaluation of " + mode)
+
+    correct_match = 0
+    nothing_found = 0
+    found_count = 0
+    total = len(actual_results)
+
+
+    for count in range(0, len(actual_results)):
+        actual_result = actual_results[count]
+        expected_result = expected_results[count]
+
+        all_actual = []
+        all_actual_scored = []
+
+        for row in actual_result[1]:
+            if row[0] != []:
+                all_actual_scored.append(row[0][1])
+            if row[1] != []:
+                if isinstance(row[1][0], list):
+                    all_actual.append([element[1] for element in row[1]])
+                elif isinstance(row[1][0], str):
+                    all_actual.append(row[1][1])
+
+        if len(expected_result) > 1:
+            if any(item in expected_result for item in  all_actual):
+                found_count += 1
+            else:
+                nothing_found += 1
+            if any(item in expected_result for item in  all_actual_scored):
+                correct_match += 1
+        else:
+            if expected_result[0] in all_actual:
+                found_count += 1
+            else:
+                nothing_found += 1
+            if expected_result[0] in all_actual_scored:
+                correct_match += 1
+
+    accuracy = correct_match/total * 100
+    found_accuracy = found_count/total * 100
+
+    print("Accuracy:\t" + str(accuracy))
+    print("Found Accuracy:\t" + str(found_accuracy))
+
+    return accuracy, found_accuracy, nothing_found
+
 
 def save_results(results, location, mode):
     print("Saving Results for " + mode)
@@ -257,6 +343,17 @@ def save_results(results, location, mode):
     file.close()
     print("Finished saving results for " + mode)
 
+def save_results_top_5(results, location, mode):
+    print("Saving Results for " + mode)
+    file = open(location + mode + ".txt", "w+", encoding="utf-8")
+
+    file.truncate()
+
+    for result in results:
+        file.write(result[0] + "\t" + str(result[1]) + "\n")
+
+    file.close()
+    print("Finished saving results for " + mode)
 
 def save_evaluations(result, location, mode):
     print("Saving Evaluation for " + mode)
@@ -284,10 +381,12 @@ def main(args):
     print(args)
 
     #load results from entity detection
-    train_ed, test_ed, valid_ed = load_responses(args.results_entity_detection)
+    train_ed, test_ed, valid_ed = load_responses(args.results_entity_detection, False)
 
     #load results from relation prediction
-    train_rp, test_rp, valid_rp = load_responses(args.results_relation_prediction)
+    train_rp, test_rp, valid_rp = load_responses(args.results_relation_prediction, False)
+
+    train_rp_top_5, test_rp_top_5, valid_rp_top_5 = load_responses(args.results_relation_prediction, True)
 
     if (args.dataset == "SimpleQuestions"):
         expected_train, expected_valid, expected_test = load_simple_questions(args.data_location, args.freebase_conversion_file)
@@ -297,18 +396,22 @@ def main(args):
     #Create querying framework
     neo4jConnector = Neo4jConnector(args.neo4j_url, args.neo4j_username, args.neo4j_password)
 
-    train_x = join_data(train_ed, train_rp)
-    test_x = join_data(test_ed, test_rp)
-    valid_x = join_data(valid_ed, valid_rp)
+    train_x = join_data(train_ed, train_rp, train_rp_top_5)
+    test_x = join_data(test_ed, test_rp, test_rp_top_5)
+    valid_x = join_data(valid_ed, valid_rp, valid_rp_top_5)
 
     if(args.skip == False):
-        test_y = get_responses(neo4jConnector, test_x, args.neo4j_database)
-        train_y = get_responses(neo4jConnector, train_x, args.neo4j_database)
-        valid_y = get_responses(neo4jConnector, valid_x, args.neo4j_database)
+        test_y, test_y_top_5 = get_responses(neo4jConnector, test_x, args.neo4j_database)
+        train_y, train_y_top_5 = get_responses(neo4jConnector, train_x, args.neo4j_database)
+        valid_y, valid_y_top_5 = get_responses(neo4jConnector, valid_x, args.neo4j_database)
 
         save_results(train_y, args.results_evidence_integration, "Train")
         save_results(test_y, args.results_evidence_integration, "Test")
         save_results(valid_y, args.results_evidence_integration, "Valid")
+
+        save_results_top_5(train_y_top_5, args.results_evidence_integration, "Train_top5")
+        save_results_top_5(test_y_top_5, args.results_evidence_integration, "Test_top5")
+        save_results_top_5(valid_y_top_5, args.results_evidence_integration, "Valid_top5")
     else:
         train_y = get_responses_saved(args.results_evidence_integration, "Train")
         test_y = get_responses_saved(args.results_evidence_integration, "Test")
@@ -317,6 +420,10 @@ def main(args):
     train_acc, train_found_acc, train_nothing_found = evaluate(train_y, expected_train, "Train")
     test_acc, test_found_acc, test_nothing_found = evaluate(test_y, expected_test, "Test")
     valid_acc, valid_found_acc, valid_nothing_found = evaluate(valid_y, expected_valid, "Valid")
+
+    train_acc_top_5, train_found_acc_top_5, train_nothing_found_top_5 = evaluateTop5(train_y_top_5, expected_train, "Train")
+    test_acc_top_5, test_found_acc_top_5, test_nothing_found_top_5 = evaluateTop5(test_y_top_5, expected_test, "Test")
+    valid_acc_top_5, valid_found_acc_top_5, valid_nothing_found_top_5 = evaluateTop5(valid_y_top_5, expected_valid, "Valid")
 
     save_evaluations(train_acc, args.results_evidence_integration_stats, "Train")
     save_evaluations(test_acc, args.results_evidence_integration_stats, "Test")
@@ -330,16 +437,16 @@ if __name__ == "__main__":
     #parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\SimpleQuestions\\')
     #parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\SimpleQuestions\\Responses\\')
     #parser.add_argument('--data_location', type=str, default='data\\QuestionAnswering\\processed_simplequestions_dataset\\')
-    parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\DOI\\Responses\\')
-    parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\DOI\\Responses\\')
-    parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\DOI\\')
-    parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\DOI\\Responses\\')
+    parser.add_argument('--results_entity_detection', type=str, default='EntityDetection\\Results\\DOI-mt2\\Responses\\')
+    parser.add_argument('--results_evidence_integration', type=str, default='EvidenceIntegration\\Results\\DOI-mt2\\Responses\\')
+    parser.add_argument('--results_evidence_integration_stats', type=str, default='EvidenceIntegration\\Results\\DOI-mt2\\')
+    parser.add_argument('--results_relation_prediction', type=str, default='RelationPrediction\\Results\\DOI-mt2\\Responses\\')
+    parser.add_argument('--data_location', type=str, default='data\\DOI\\QA\\maltese\\')
     parser.add_argument('--freebase_conversion_file', type=str, default='data\\QuestionAnswering\\freebase_names\\FB5M.name.txt')
-    parser.add_argument('--data_location', type=str, default='data\\DOI\\QA\\english\\')
     parser.add_argument('--neo4j_url', type=str, default="bolt://localhost:14220")
     parser.add_argument('--neo4j_username', type=str, default="matthew")
     parser.add_argument('--neo4j_password', type=str, default="password")
-    parser.add_argument('--neo4j_database', type=str, default="doi-en")
+    parser.add_argument('--neo4j_database', type=str, default="doi-mt2")
     parser.add_argument('--language',type=str, default="en")
     parser.add_argument('--dataset', type=str, default="DOI")
     parser.add_argument('--skip', type=bool, default=False)

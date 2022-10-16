@@ -1,0 +1,3 @@
+Train
+Accuracy:	1.0
+Accuracy Top 5:	1.0

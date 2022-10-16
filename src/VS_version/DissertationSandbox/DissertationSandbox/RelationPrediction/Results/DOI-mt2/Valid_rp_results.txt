@@ -1,0 +1,3 @@
+Valid
+Accuracy:	0.4
+Accuracy Top 5:	0.4

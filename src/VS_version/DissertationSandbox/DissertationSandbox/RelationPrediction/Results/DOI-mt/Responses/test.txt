@@ -1,0 +1,15 @@
+test-1	żaru
+test-2	jieħdu
+test-3	feraħ
+test-4	rringrazzja
+test-5	rringrazzja
+test-6	tinvolvi
+test-7	esegwew
+test-8	rċevew
+test-9	rringrazzja
+test-10	rrikonoxxa
+test-11	tinvolvi
+test-12	rrikonoxxa
+test-13	tinforma
+test-14	tilqa'
+test-15	jiċħad

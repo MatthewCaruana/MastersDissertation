@@ -1,1 +1,3 @@
-TrainAccuracy:	0.9638546261324318
+Train
+Accuracy:	0.9638546261324318
+Accuracy Top 5:	0.9964739441641794

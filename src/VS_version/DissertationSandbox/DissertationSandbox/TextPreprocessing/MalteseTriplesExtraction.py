@@ -34,17 +34,17 @@ def handle_DOI(args):
     for single_doi in doi_data:
         split_sentences = re.split(r"\.|\?|\!", single_doi["Content"])
         if "en" in single_doi["Number"]:
-            #if single_doi["Date"][6:] == "1997":
-            english_doi_sentences.extend(split_sentences)
+            if single_doi["Date"][6:] == "2019":
+                english_doi_sentences.extend(split_sentences)
         else:
-            #if single_doi["Date"][6:] == "2022":
-            maltese_doi_sentences.extend(split_sentences)
+            if single_doi["Date"][6:] == "2019":
+                maltese_doi_sentences.extend(split_sentences)
 
     print("Saving Maltese Content")
     if args.skip_mt == False:
         print("Saving Maltese DOI sentences")
-        if not os.path.isfile(args.result_location + "mt\\sentences-2022.txt"):
-            with open(args.result_location + "mt\\sentences-2022.txt", 'w', encoding="utf-8") as file:
+        if not os.path.isfile(args.result_location + "mt\\sentences-2019.txt"):
+            with open(args.result_location + "mt\\sentences-2019.txt", 'w', encoding="utf-8") as file:
                 json.dump(maltese_doi_sentences, file, ensure_ascii = False)
 
         maltese_doi_extractions = load_doi_dependency_tree(args.maltese_doi_data_location)
@@ -66,10 +66,14 @@ def handle_DOI(args):
                     subject_id = current_count
                     entities[triple[0]] = {'id':subject_id, 'text': triple[0]}
                     current_count = current_count + 1
+                else:
+                    subject_id = entities[triple[0]]['id']
                 if triple[2] not in entities:
                     object_id = current_count
                     entities[triple[2]] = {'id':object_id, 'text': triple[2]}
                     current_count = current_count + 1
+                else:
+                    object_id = entities[triple[2]]['id']
 
                 triple_content = {"subject": subject_id, "relation": triple[1], "object": object_id, "sentence": extractions["sentence"]}
                 relations.append(triple_content)

@@ -1,0 +1,15 @@
+valid-1	esegwew
+valid-2	esprima
+valid-3	rringrazzja
+valid-4	għamel
+valid-5	tinvolvi
+valid-6	jagħmel
+valid-7	jieħdu
+valid-8	kkwota
+valid-9	rringrazzja
+valid-10	tgħin
+valid-11	esegwew
+valid-12	ħabbar
+valid-13	żaru
+valid-14	esperjenzaw
+valid-15	tinvolvi

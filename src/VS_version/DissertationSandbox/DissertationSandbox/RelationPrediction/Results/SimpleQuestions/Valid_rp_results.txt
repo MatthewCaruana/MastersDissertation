@@ -1,1 +1,3 @@
-ValidAccuracy:	0.69875173370319
+Valid
+Accuracy:	0.69875173370319
+Accuracy Top 5:	0.8855293573740176

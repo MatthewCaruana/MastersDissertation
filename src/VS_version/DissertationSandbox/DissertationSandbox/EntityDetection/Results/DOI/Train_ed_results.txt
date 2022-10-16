@@ -1,4 +1,0 @@
-Train
-Precision:	0.936
-Recall:	1.0
-F1-score:	0.9669421487603307

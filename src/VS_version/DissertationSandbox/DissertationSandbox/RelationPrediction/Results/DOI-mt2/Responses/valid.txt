@@ -1,0 +1,10 @@
+valid-1	appella
+valid-2	eżamina
+valid-3	elenka
+valid-4	fetaħ
+valid-5	esponew
+valid-6	idaħħal
+valid-7	tavża
+valid-8	tavża
+valid-9	esponew
+valid-10	rċevew

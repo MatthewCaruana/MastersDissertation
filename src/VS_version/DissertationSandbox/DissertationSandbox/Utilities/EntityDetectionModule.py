@@ -149,12 +149,12 @@ class NeuralEntityDetection:
         self.input_size = 100
         self.hidden_size = 256
         self.layer_numbers = 2
-        self.rnn_dropout = 0.3
+        self.rnn_dropout = 0.8
         self.label_size = 2
 
         np.random.seed(456)
         self.batch_size = 500
-        self.iterations = 1000
+        self.iterations = 300
 
         self.dense_embedding = 16 # Dimension of the dense embedding
         self.lstm_units = 16
@@ -182,7 +182,7 @@ class NeuralEntityDetection:
             self.model.add(layers.BatchNormalization(epsilon = 1e-05, momentum=0.1))
             self.model.add(layers.Activation("relu"))
             self.model.add(layers.Dropout(self.rnn_dropout))
-            self.model.add(layers.Dense(2))
+            self.model.add(layers.Dense(2, activation= "relu"))
 
 
         self.model.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(learning_rate=0.0001), metrics=["accuracy"])
